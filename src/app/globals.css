@@ -8,9 +8,9 @@
   --status-warning: #FFB84D;
   --status-danger: #FF5C5C;
   
-  --font-display: 'Space Grotesk', var(--font-geist-sans), sans-serif;
-  --font-ui: 'Inter', var(--font-geist-sans), sans-serif;
-  --font-mono: 'JetBrains Mono', var(--font-geist-mono), monospace;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Inter, sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 }
 
 body {
@@ -19,6 +19,8 @@ body {
   font-family: var(--font-ui);
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(94, 224, 255, 0.08) 0%, transparent 60%),
     radial-gradient(circle at 10% 40%, rgba(94, 224, 255, 0.03) 0%, transparent 40%),
@@ -26,35 +28,37 @@ body {
   background-attachment: fixed;
 }
 
-/* Glass panel design tokens per specifications */
+/* Apple-style ultra-glass panel tokens with rounded curves */
 .glass-panel {
-  background-color: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(94, 224, 255, 0.25);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 25px 50px -12px rgba(94, 224, 255, 0.08);
+  border-color: rgba(94, 224, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 30px 60px -12px rgba(94, 224, 255, 0.12);
 }
 
 .glass-pill {
   background-color: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .electric-glow {
-  box-shadow: 0 0 20px rgba(94, 224, 255, 0.35);
+  box-shadow: 0 0 24px rgba(94, 224, 255, 0.35);
 }
 
 .text-cyan-glow {
-  text-shadow: 0 0 12px rgba(94, 224, 255, 0.6);
+  text-shadow: 0 0 16px rgba(94, 224, 255, 0.6);
 }
 
 /* Custom Scrollbar for terminal & lists */
@@ -68,7 +72,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
 }
 

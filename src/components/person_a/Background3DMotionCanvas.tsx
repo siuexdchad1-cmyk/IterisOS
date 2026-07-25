@@ -8,7 +8,9 @@ export default function Background3DMotionCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   
-  const [currentFrame, setCurrentFrame] = useState(0);
+  const currentFrameRef = useRef(0);
+  const targetFrameRef = useRef(0);
+  const animFrameIdRef = useRef<number | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   // Preload all 300 frames
@@ -44,13 +46,14 @@ export default function Background3DMotionCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const img = imagesRef.current[frameIdx];
+    const idx = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(frameIdx)));
+    const img = imagesRef.current[idx];
     if (!img || !img.complete || img.naturalWidth === 0) return;
 
     const width = canvas.width;
     const height = canvas.height;
 
-    // Clear canvas with background #0A0D14
+    // Fill background with #0A0D14
     ctx.fillStyle = "#0A0D14";
     ctx.fillRect(0, 0, width, height);
 
@@ -63,17 +66,35 @@ export default function Background3DMotionCanvas() {
     let offsetY = 0;
 
     if (canvasRatio > imgRatio) {
-      drawHeight = height;
-      drawWidth = height * imgRatio;
-      offsetX = (width - drawWidth) / 2;
-    } else {
       drawWidth = width;
       drawHeight = width / imgRatio;
       offsetY = (height - drawHeight) / 2;
+    } else {
+      drawHeight = height;
+      drawWidth = height * imgRatio;
+      offsetX = (width - drawWidth) / 2;
     }
 
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
   }, []);
+
+  // Smooth lerp render loop for low scroll sensitivity (fluid Apple physics)
+  useEffect(() => {
+    const loop = () => {
+      // Lerp current frame towards target frame smoothly (0.06 dampening factor)
+      const diff = targetFrameRef.current - currentFrameRef.current;
+      if (Math.abs(diff) > 0.01) {
+        currentFrameRef.current += diff * 0.06;
+        drawFrame(currentFrameRef.current);
+      }
+      animFrameIdRef.current = requestAnimationFrame(loop);
+    };
+
+    animFrameIdRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
+    };
+  }, [drawFrame]);
 
   // Handle Canvas Resize
   useEffect(() => {
@@ -81,38 +102,33 @@ export default function Background3DMotionCanvas() {
       if (canvasRef.current) {
         canvasRef.current.width = window.innerWidth;
         canvasRef.current.height = window.innerHeight;
-        drawFrame(currentFrame);
+        drawFrame(currentFrameRef.current);
       }
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [currentFrame, drawFrame]);
+  }, [drawFrame]);
 
-  // Scroll-linked frame update
+  // Gentle, dampened scroll tracking (low sensitivity)
   useEffect(() => {
     const handleScroll = () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollHeight <= 0) return;
 
       const currentScroll = window.scrollY;
-      const ratio = Math.max(0, Math.min(1, currentScroll / scrollHeight));
+      // Controlled ratio mapping with dampening so scrolling doesn't jump frames
+      const ratio = Math.max(0, Math.min(1, currentScroll / Math.max(scrollHeight, 1800)));
 
-      const frameIdx = Math.min(
-        TOTAL_FRAMES - 1,
-        Math.floor(ratio * (TOTAL_FRAMES - 1))
-      );
-
-      setCurrentFrame(frameIdx);
-      drawFrame(frameIdx);
+      targetFrameRef.current = ratio * (TOTAL_FRAMES - 1);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [drawFrame]);
+  }, []);
 
   // Initial draw when loaded
   useEffect(() => {
@@ -122,7 +138,7 @@ export default function Background3DMotionCanvas() {
   }, [loaded, drawFrame]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 opacity-30 mix-blend-screen overflow-hidden">
       <canvas
         ref={canvasRef}
         className="w-full h-full object-cover"
