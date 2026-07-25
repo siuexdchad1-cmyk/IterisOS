@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ShoppingBag, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Cpu } from "lucide-react";
 
 interface SonyNavbarProps {
   onOpenBuyModal: () => void;
@@ -40,13 +39,16 @@ export default function SonyNavbar({ onOpenBuyModal }: SonyNavbarProps) {
     >
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
         {/* Left: Brand logo */}
-        <div className="flex items-center space-x-4">
-          <span className="font-display font-black text-xl md:text-2xl tracking-widest text-white uppercase">
-            SONY
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#00D6FF]/10 border border-[#00D6FF]/30 text-[#00D6FF]">
+            <Cpu className="w-4 h-4" />
+          </div>
+          <span className="font-display font-black text-xl md:text-2xl tracking-tight text-white uppercase">
+            ITERIS<span className="text-[#00D6FF]">.OS</span>
           </span>
           <span className="h-4 w-[1px] bg-white/20 hidden sm:inline-block" />
           <span className="font-mono text-xs font-semibold tracking-wider text-gray-300 hidden sm:inline-block">
-            WH-1000XM6
+            Flagship Audio
           </span>
         </div>
 
@@ -88,9 +90,9 @@ export default function SonyNavbar({ onOpenBuyModal }: SonyNavbarProps) {
         <div className="flex items-center space-x-3">
           <button
             onClick={onOpenBuyModal}
-            className="sony-btn-primary px-5 py-2 text-xs font-semibold flex items-center space-x-2 cursor-pointer"
+            className="iteris-btn-primary px-5 py-2 text-xs font-semibold flex items-center space-x-2 cursor-pointer"
           >
-            <span>Experience WH-1000XM6</span>
+            <span>Experience Iteris OS</span>
             <ChevronRight className="w-3.5 h-3.5 text-white/80" />
           </button>
         </div>

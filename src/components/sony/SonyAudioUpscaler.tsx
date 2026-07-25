@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Music, Zap, Activity } from "lucide-react";
+import { Sparkles, Zap, Activity } from "lucide-react";
 
 export default function SonyAudioUpscaler() {
   const [upscaleActive, setUpscaleActive] = useState<boolean>(true);
@@ -28,20 +27,16 @@ export default function SonyAudioUpscaler() {
       const barWidth = (width / bars) - 2;
 
       for (let i = 0; i < bars; i++) {
-        // High frequency cutoff index if DSEE is OFF
         const isHighFreq = i > bars * 0.55;
-        
         let barHeight = (Math.sin(i * 0.2 + t) * 0.4 + Math.cos(i * 0.1 - t) * 0.4 + 0.5) * (height * 0.7);
 
         if (!upscaleActive && isHighFreq) {
-          // Attenuate high frequencies when compressed
           barHeight *= 0.15;
         }
 
         const x = i * (barWidth + 2);
         const y = height - barHeight;
 
-        // Gradient for bars
         const grad = ctx.createLinearGradient(0, height, 0, 0);
         if (upscaleActive) {
           grad.addColorStop(0, "#0050FF");
@@ -73,7 +68,7 @@ export default function SonyAudioUpscaler() {
             <span>DSEE EXTREME™ AI AUDIO ENHANCEMENT</span>
           </div>
           <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight uppercase">
-            Restoring <span className="gradient-text-sony">Lost Detail</span>
+            Restoring <span className="gradient-text-iteris">Lost Detail</span>
           </h2>
           <p className="text-xs md:text-sm text-gray-400 font-sans leading-relaxed">
             Using Edge-AI trained on thousands of studio recordings, DSEE Extreme dynamically restores high-frequency harmonics stripped away by digital compression.
@@ -101,7 +96,7 @@ export default function SonyAudioUpscaler() {
               onClick={() => setUpscaleActive(!upscaleActive)}
               className={`px-6 py-2.5 rounded-full text-xs font-mono font-bold transition-all cursor-pointer flex items-center space-x-2 ${
                 upscaleActive
-                  ? "sony-btn-primary"
+                  ? "iteris-btn-primary"
                   : "bg-white/10 text-white hover:bg-white/20 border border-white/15"
               }`}
             >
@@ -127,7 +122,6 @@ export default function SonyAudioUpscaler() {
                 className="w-full h-full object-cover"
               />
               
-              {/* Frequency cutoff marker when DSEE is OFF */}
               {!upscaleActive && (
                 <div className="absolute top-0 bottom-0 left-[55%] w-[2px] bg-red-500/80 border-r border-red-500/40 flex items-center">
                   <span className="text-[9px] font-mono text-red-400 bg-black/80 px-1 py-0.5 rounded -rotate-90 origin-left">

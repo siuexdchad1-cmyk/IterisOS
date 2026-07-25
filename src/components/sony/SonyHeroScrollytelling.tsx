@@ -39,7 +39,6 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
       };
 
       img.onerror = () => {
-        // Fallback progress if frame load completes
         loadedCount++;
         setLoadProgress(Math.floor((loadedCount / TOTAL_FRAMES) * 100));
         if (loadedCount === TOTAL_FRAMES) {
@@ -63,7 +62,6 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
     const img = imagesRef.current[frameIdx];
     if (!img || !img.complete || img.naturalWidth === 0) return;
 
-    // Set canvas dimensions to parent display size
     const width = canvas.width;
     const height = canvas.height;
 
@@ -71,7 +69,6 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
     ctx.fillStyle = "#050505";
     ctx.fillRect(0, 0, width, height);
 
-    // Calculate aspect ratio fit (contain)
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = width / height;
 
@@ -90,7 +87,6 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
       offsetY = (height - drawHeight) / 2;
     }
 
-    // Draw image centered
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
   }, []);
 
@@ -122,7 +118,6 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
       
       setScrollProgress(rawProgress);
 
-      // Map progress 0..1 to 0..TOTAL_FRAMES-1
       const frameIdx = Math.min(
         TOTAL_FRAMES - 1,
         Math.floor(rawProgress * (TOTAL_FRAMES - 1))
@@ -133,12 +128,11 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [drawFrame]);
 
-  // Initial draw once loaded
   useEffect(() => {
     if (imagesLoaded) {
       drawFrame(0);
@@ -169,7 +163,7 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
           <div className="absolute inset-0 z-40 bg-[#050505] flex flex-col items-center justify-center space-y-4">
             <div className="w-12 h-12 rounded-full border-2 border-[#00D6FF]/20 border-t-[#00D6FF] animate-spin" />
             <div className="text-center font-mono text-xs text-gray-400 space-y-1">
-              <p className="text-white font-semibold tracking-widest uppercase">SONY WH-1000XM6</p>
+              <p className="text-white font-semibold tracking-widest uppercase">ITERIS OS</p>
               <p className="text-gray-500">Loading 3D Scrollytelling Sequence... {loadProgress}%</p>
             </div>
             <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
@@ -181,7 +175,7 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
           </div>
         )}
 
-        {/* ── NARRATIVE BEAT OVERLAYS (Synchronized to Scroll Progress) ── */}
+        {/* ── NARRATIVE BEAT OVERLAYS ── */}
 
         {/* BEAT 1: 0% – 18% (Hero Assembly) */}
         <AnimatePresence>
@@ -203,7 +197,7 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
               {/* Central hero headline */}
               <div className="space-y-4 max-w-3xl">
                 <h1 className="font-display font-black text-5xl md:text-7xl lg:text-8xl tracking-tight text-white uppercase">
-                  SONY <span className="gradient-text-sony">WH-1000XM6</span>
+                  ITERIS <span className="gradient-text-iteris">OS</span>
                 </h1>
                 <p className="font-display text-xl md:text-3xl text-gray-300 font-light tracking-wide">
                   Silence, perfected.
@@ -337,24 +331,24 @@ export default function SonyHeroScrollytelling({ onOpenBuyModal }: SonyHeroScrol
                 </div>
                 <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight uppercase leading-tight">
                   Hear everything. <br />
-                  <span className="gradient-text-sony">Feel nothing else.</span>
+                  <span className="gradient-text-iteris">Feel nothing else.</span>
                 </h2>
                 <p className="text-xs md:text-sm text-gray-300 max-w-md mx-auto font-sans leading-relaxed">
-                  WH-1000XM6. Designed for focus, crafted for comfort. Engineered for airports, offices, and everywhere in between.
+                  Iteris OS. Designed for focus, crafted for comfort. Engineered for airports, offices, and everywhere in between.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
                   <button
                     onClick={onOpenBuyModal}
-                    className="sony-btn-primary px-8 py-3.5 text-xs font-bold flex items-center space-x-2 cursor-pointer w-full sm:w-auto justify-center"
+                    className="iteris-btn-primary px-8 py-3.5 text-xs font-bold flex items-center space-x-2 cursor-pointer w-full sm:w-auto justify-center"
                   >
-                    <span>Experience WH-1000XM6</span>
+                    <span>Experience Iteris OS</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
                   <button
                     onClick={() => scrollToSection("specs")}
-                    className="sony-btn-secondary px-6 py-3.5 text-xs font-semibold cursor-pointer w-full sm:w-auto"
+                    className="iteris-btn-secondary px-6 py-3.5 text-xs font-semibold cursor-pointer w-full sm:w-auto"
                   >
                     See full specs
                   </button>

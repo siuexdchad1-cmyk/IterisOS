@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { ShieldCheck, VolumeX, Radio, Plane, Train, Building2, Wind } from "lucide-react";
+import { ShieldCheck, Radio, Plane, Train, Building2, Wind } from "lucide-react";
 
 type AncMode = "anc" | "ambient" | "off";
 type Environment = "airport" | "subway" | "office" | "street";
@@ -57,7 +56,6 @@ export default function SonyAncSimulator() {
           const freq2 = environment === "subway" ? 0.05 : 0.01;
           const amp = 8;
           
-          // Exactly inverted wave phase
           const y = centerY - (Math.sin(x * freq1 + phase) * amp + Math.cos(x * freq2 - phase) * (amp * 0.5));
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
@@ -97,10 +95,10 @@ export default function SonyAncSimulator() {
             <span>INTERACTIVE ANC SIMULATOR</span>
           </div>
           <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight uppercase">
-            Experience <span className="gradient-text-sony">Absolute Quiet</span>
+            Experience <span className="gradient-text-iteris">Absolute Quiet</span>
           </h2>
           <p className="text-xs md:text-sm text-gray-400 font-sans leading-relaxed">
-            Select an environment and toggle active noise cancellation to simulate how dual QN3 processors eliminate ambient frequencies in real time.
+            Select an environment and toggle active noise cancellation to simulate how Iteris OS eliminates ambient frequencies in real time.
           </p>
         </div>
 

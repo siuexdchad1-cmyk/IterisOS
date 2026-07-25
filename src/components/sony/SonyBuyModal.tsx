@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, ShoppingBag, ShieldCheck, Truck, RotateCcw, ArrowRight } from "lucide-react";
+import { X, Check, ShoppingBag, ShieldCheck, Truck, RotateCcw } from "lucide-react";
 
 interface SonyBuyModalProps {
   isOpen: boolean;
@@ -14,12 +14,11 @@ type ColorFinish = "black" | "silver" | "navy";
 export default function SonyBuyModal({ isOpen, onClose }: SonyBuyModalProps) {
   const [color, setColor] = useState<ColorFinish>("black");
   const [ordered, setOrdered] = useState(false);
-  const [quantity, setQuantity] = useState(1);
 
   const colors = [
-    { id: "black", name: "Matte Black", hex: "#121214", border: "border-gray-600" },
-    { id: "silver", name: "Platinum Silver", hex: "#D8D8DC", border: "border-white" },
-    { id: "navy", name: "Midnight Navy", hex: "#1A2338", border: "border-blue-900" },
+    { id: "black", name: "Matte Black", hex: "#121214" },
+    { id: "silver", name: "Platinum Silver", hex: "#D8D8DC" },
+    { id: "navy", name: "Midnight Navy", hex: "#1A2338" },
   ];
 
   const handleCompleteOrder = (e: React.FormEvent) => {
@@ -63,13 +62,13 @@ export default function SonyBuyModal({ isOpen, onClose }: SonyBuyModalProps) {
               {/* Header */}
               <div className="space-y-1 pr-8">
                 <span className="text-xs font-mono text-[#00D6FF] uppercase tracking-wider">
-                  SONY FLAGSHIP PRE-ORDER
+                  ITERIS OS FLAGSHIP PRE-ORDER
                 </span>
                 <h3 className="font-display font-black text-2xl md:text-3xl text-white uppercase">
-                  WH-1000XM6 Wireless
+                  Iteris OS Wireless
                 </h3>
                 <p className="text-xs text-gray-400 font-sans">
-                  Includes carrying case, USB-C fast charging cable, audio cable, and 1-year Sony warranty.
+                  Includes carrying case, USB-C fast charging cable, audio cable, and 1-year warranty.
                 </p>
               </div>
 
@@ -131,7 +130,7 @@ export default function SonyBuyModal({ isOpen, onClose }: SonyBuyModalProps) {
 
                 <button
                   type="submit"
-                  className="w-full sony-btn-primary py-3.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full iteris-btn-primary py-3.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Reserve Pre-Order — $399.99</span>
@@ -165,7 +164,7 @@ export default function SonyBuyModal({ isOpen, onClose }: SonyBuyModalProps) {
                 Pre-Order Confirmed!
               </h3>
               <p className="text-xs text-gray-300 max-w-sm mx-auto font-sans leading-relaxed">
-                Thank you for reserving the Sony WH-1000XM6 ({colors.find((c) => c.id === color)?.name}). Confirmation and tracking details have been sent to your email.
+                Thank you for reserving Iteris OS ({colors.find((c) => c.id === color)?.name}). Confirmation and tracking details have been sent to your email.
               </p>
 
               <button
@@ -173,7 +172,7 @@ export default function SonyBuyModal({ isOpen, onClose }: SonyBuyModalProps) {
                   setOrdered(false);
                   onClose();
                 }}
-                className="sony-btn-secondary px-8 py-3 text-xs font-semibold cursor-pointer"
+                className="iteris-btn-secondary px-8 py-3 text-xs font-semibold cursor-pointer"
               >
                 Return to Experience
               </button>

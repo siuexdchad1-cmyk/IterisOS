@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, Zap, Battery, Cpu, Radio, Volume2, Shield } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface SonyTechSpecsProps {
   onOpenBuyModal: () => void;
@@ -11,37 +11,37 @@ const specsData = [
   {
     category: "Noise Cancellation",
     specs: [
-      { name: "HD Noise Cancelling Processor", xm6: "Dual QN3 Processors", xm5: "Single QN1 Processor" },
-      { name: "Microphone Count", xm6: "8 Beamforming Microphones", xm5: "8 Microphones" },
-      { name: "Auto-NC Optimizer", xm6: "Real-Time Pressure & Wear Calibration", xm5: "Standard Auto-NC" },
-      { name: "Atmospheric Pressure Optimizing", xm6: "Yes (Dedicated Barometric Sensor)", xm5: "Yes" },
+      { name: "HD Noise Cancelling Processor", iteris: "Dual QN3 Processors", prev: "Single QN1 Processor" },
+      { name: "Microphone Count", iteris: "8 Beamforming Microphones", prev: "8 Microphones" },
+      { name: "Auto-NC Optimizer", iteris: "Real-Time Pressure & Wear Calibration", prev: "Standard Auto-NC" },
+      { name: "Atmospheric Pressure Optimizing", iteris: "Yes (Dedicated Barometric Sensor)", prev: "Yes" },
     ],
   },
   {
     category: "Audio & Acoustics",
     specs: [
-      { name: "Driver Unit", xm6: "Custom 30mm Carbon-Fiber Composite", xm5: "30mm Synthetic Dome" },
-      { name: "Frequency Response", xm6: "4 Hz - 40,000 Hz (Active)", xm5: "4 Hz - 40,000 Hz" },
-      { name: "High-Res Audio Codecs", xm6: "LDAC, AAC, SBC, LC3 (LE Audio)", xm5: "LDAC, AAC, SBC" },
-      { name: "AI Upscaling Engine", xm6: "DSEE Extreme™ with Edge-AI", xm5: "DSEE Extreme™" },
+      { name: "Driver Unit", iteris: "Custom 30mm Carbon-Fiber Composite", prev: "30mm Synthetic Dome" },
+      { name: "Frequency Response", iteris: "4 Hz - 40,000 Hz (Active)", prev: "4 Hz - 40,000 Hz" },
+      { name: "High-Res Audio Codecs", iteris: "LDAC, AAC, SBC, LC3 (LE Audio)", prev: "LDAC, AAC, SBC" },
+      { name: "AI Upscaling Engine", iteris: "DSEE Extreme™ with Edge-AI", prev: "DSEE Extreme™" },
     ],
   },
   {
     category: "Battery & Charging",
     specs: [
-      { name: "Battery Life (ANC ON)", xm6: "Up to 40 Hours", xm5: "Up to 30 Hours" },
-      { name: "Battery Life (ANC OFF)", xm6: "Up to 50 Hours", xm5: "Up to 40 Hours" },
-      { name: "Fast USB-PD Charging", xm6: "3 min charge = 5 hours playback", xm5: "3 min charge = 3 hours" },
-      { name: "Charging Interface", xm6: "USB-C Fast Charging", xm5: "USB-C" },
+      { name: "Battery Life (ANC ON)", iteris: "Up to 40 Hours", prev: "Up to 30 Hours" },
+      { name: "Battery Life (ANC OFF)", iteris: "Up to 50 Hours", prev: "Up to 40 Hours" },
+      { name: "Fast USB-PD Charging", iteris: "3 min charge = 5 hours playback", prev: "3 min charge = 3 hours" },
+      { name: "Charging Interface", iteris: "USB-C Fast Charging", prev: "USB-C" },
     ],
   },
   {
     category: "Connectivity & Smart Features",
     specs: [
-      { name: "Bluetooth Version", xm6: "Bluetooth 5.4 (Ultra-low Latency)", xm5: "Bluetooth 5.2" },
-      { name: "Multipoint Connection", xm6: "Simultaneous 2 Devices (Seamless)", xm5: "Simultaneous 2 Devices" },
-      { name: "Speak-to-Chat & Wear Detect", xm6: "Instant AI Optical Detection", xm5: "Standard Optical" },
-      { name: "Weight", xm6: "248 grams (Ultra-light Ergonomic)", xm5: "250 grams" },
+      { name: "Bluetooth Version", iteris: "Bluetooth 5.4 (Ultra-low Latency)", prev: "Bluetooth 5.2" },
+      { name: "Multipoint Connection", iteris: "Simultaneous 2 Devices (Seamless)", prev: "Simultaneous 2 Devices" },
+      { name: "Speak-to-Chat & Wear Detect", iteris: "Instant AI Optical Detection", prev: "Standard Optical" },
+      { name: "Weight", iteris: "248 grams (Ultra-light Ergonomic)", prev: "250 grams" },
     ],
   },
 ];
@@ -57,10 +57,10 @@ export default function SonyTechSpecs({ onOpenBuyModal }: SonyTechSpecsProps) {
             TECHNICAL SPECIFICATIONS
           </span>
           <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight uppercase">
-            Built Without <span className="gradient-text-sony">Compromise</span>
+            Built Without <span className="gradient-text-iteris">Compromise</span>
           </h2>
           <p className="text-xs md:text-sm text-gray-400 font-sans leading-relaxed">
-            Compare the groundbreaking technological leaps built into the flagship WH-1000XM6.
+            Compare the groundbreaking technological leaps built into Iteris OS.
           </p>
         </div>
 
@@ -71,10 +71,10 @@ export default function SonyTechSpecs({ onOpenBuyModal }: SonyTechSpecsProps) {
           <div className="min-w-[600px] grid grid-cols-12 text-xs font-mono pb-4 border-b border-white/15 text-gray-400 uppercase tracking-wider">
             <div className="col-span-5 text-left font-bold text-white">Feature / Specification</div>
             <div className="col-span-4 text-center font-bold text-[#00D6FF] flex items-center justify-center space-x-1">
-              <span>WH-1000XM6</span>
+              <span>ITERIS OS</span>
               <span className="px-1.5 py-0.5 rounded bg-[#00D6FF]/20 text-[9px]">FLAGSHIP</span>
             </div>
-            <div className="col-span-3 text-center text-gray-500">WH-1000XM5</div>
+            <div className="col-span-3 text-center text-gray-500">PREVIOUS GEN</div>
           </div>
 
           {/* Table Body Groups */}
@@ -94,9 +94,9 @@ export default function SonyTechSpecs({ onOpenBuyModal }: SonyTechSpecsProps) {
                       <div className="col-span-5 font-medium text-gray-200">{row.name}</div>
                       <div className="col-span-4 text-center font-bold text-white font-mono flex items-center justify-center space-x-1.5">
                         <Check className="w-3.5 h-3.5 text-[#3DDC84]" />
-                        <span>{row.xm6}</span>
+                        <span>{row.iteris}</span>
                       </div>
-                      <div className="col-span-3 text-center text-gray-500 font-mono">{row.xm5}</div>
+                      <div className="col-span-3 text-center text-gray-500 font-mono">{row.prev}</div>
                     </div>
                   ))}
                 </div>
@@ -112,9 +112,9 @@ export default function SonyTechSpecs({ onOpenBuyModal }: SonyTechSpecsProps) {
 
             <button
               onClick={onOpenBuyModal}
-              className="sony-btn-primary px-8 py-3 text-xs font-bold cursor-pointer"
+              className="iteris-btn-primary px-8 py-3 text-xs font-bold cursor-pointer"
             >
-              Pre-order WH-1000XM6
+              Pre-order Iteris OS
             </button>
           </div>
 

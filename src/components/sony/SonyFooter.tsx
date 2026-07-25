@@ -15,17 +15,17 @@ export default function SonyFooter() {
         {/* Top Footer Banner */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-12 border-b border-white/10">
           <div className="space-y-2">
-            <span className="font-display font-black text-3xl text-white tracking-widest uppercase">
-              SONY
+            <span className="font-display font-black text-3xl text-white tracking-tight uppercase">
+              ITERIS<span className="text-[#00D6FF]">.OS</span>
             </span>
             <p className="text-xs text-gray-400 max-w-md">
-              Sony Corporation of America · Flagship Audio Division. Registered trademarks reserved.
+              Iteris OS · Flagship Audio Division. All rights reserved.
             </p>
           </div>
 
           <button
             onClick={scrollToTop}
-            className="sony-btn-secondary px-5 py-2.5 text-xs font-mono flex items-center space-x-2 cursor-pointer"
+            className="iteris-btn-secondary px-5 py-2.5 text-xs font-mono flex items-center space-x-2 cursor-pointer"
           >
             <span>Back to top</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -50,7 +50,7 @@ export default function SonyFooter() {
 
         {/* Footer Legal & Copyright */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 text-gray-500 font-mono text-[11px]">
-          <div>© 2026 Sony Corporation. All rights reserved.</div>
+          <div>© 2026 Iteris OS. All rights reserved.</div>
           <div className="flex items-center space-x-6">
             <span className="hover:text-gray-300 transition-colors cursor-pointer">Privacy Policy</span>
             <span className="hover:text-gray-300 transition-colors cursor-pointer">Terms of Use</span>

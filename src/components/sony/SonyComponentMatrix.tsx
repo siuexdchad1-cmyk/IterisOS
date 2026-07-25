@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Mic, Volume2, Feather, CheckCircle2, ArrowRight } from "lucide-react";
+import { Cpu, Mic, Volume2, Feather, CheckCircle2 } from "lucide-react";
 
 const componentsData = [
   {
@@ -78,17 +78,17 @@ export default function SonyComponentMatrix() {
             INTERACTIVE ENGINEERING SHOWCASE
           </span>
           <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight uppercase">
-            Disassembled <span className="gradient-text-sony">Genius</span>
+            Disassembled <span className="gradient-text-iteris">Genius</span>
           </h2>
           <p className="text-xs md:text-sm text-gray-400 font-sans leading-relaxed">
-            Click any component to inspect the internal audio engineering breakthroughs powering the WH-1000XM6.
+            Click any component to inspect the internal audio engineering breakthroughs powering Iteris OS.
           </p>
         </div>
 
         {/* Grid + Inspector Detail View */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* 4 Cards Selector Grid (7 Cols) */}
+          {/* 4 Cards Selector Grid */}
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
             {componentsData.map((item) => {
               const Icon = item.icon;
@@ -123,7 +123,7 @@ export default function SonyComponentMatrix() {
             })}
           </div>
 
-          {/* Detailed Inspector View (5 Cols) */}
+          {/* Detailed Inspector View */}
           <div className="lg:col-span-5">
             <AnimatePresence mode="wait">
               <motion.div
@@ -134,7 +134,6 @@ export default function SonyComponentMatrix() {
                 transition={{ duration: 0.25 }}
                 className="p-8 glass-card border-[#0050FF]/40 space-y-6 relative overflow-hidden"
               >
-                {/* Accent glow behind active inspector */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-[radial-gradient(circle_at_top_right,rgba(0,214,255,0.15),transparent_70%)] pointer-events-none" />
 
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
