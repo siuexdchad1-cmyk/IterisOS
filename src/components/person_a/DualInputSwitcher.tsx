@@ -299,7 +299,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Zap className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">⚡ Direct Goal</span>
+            <span className="relative z-10">⚡ Goal Mode</span>
           </button>
 
           <button
@@ -316,7 +316,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Mic className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">🎙️ Ingest Meeting</span>
+            <span className="relative z-10">🎙️ Audio Ingest</span>
           </button>
         </div>
       </div>
@@ -348,32 +348,32 @@ export default function DualInputSwitcher() {
             onSubmit={handleGoalSubmit}
             className="space-y-3"
           >
-            {/* Single text input — no budget, no city */}
-            <div className={`relative flex items-center rounded-xl bg-black/60 border p-2 transition-all ${
-              goalError ? "border-[#FF5C5C] ring-1 ring-[#FF5C5C]/50" : "border-white/15 focus-within:border-[#5EE0FF] focus-within:ring-1 focus-within:ring-[#5EE0FF]"
+            {/* Single text input with hover highlight & focus scale glow */}
+            <div className={`relative flex items-center rounded-xl bg-black/60 border p-2 transition-all duration-200 hover:border-white/30 focus-within:scale-[1.005] focus-within:border-[#5EE0FF] focus-within:shadow-[0_0_20px_rgba(94,224,255,0.15)] ${
+              goalError ? "border-[#FF5C5C] ring-1 ring-[#FF5C5C]/50" : "border-white/15"
             }`}>
               <span className="pl-3 font-mono text-sm text-[#5EE0FF] font-bold flex-shrink-0">$</span>
               <input
                 type="text"
                 value={goalPrompt}
                 onChange={(e) => { setGoalPrompt(e.target.value); setGoalError(null); }}
-                placeholder="$ Type a goal or upload meeting transcript..."
+                placeholder='e.g., "Analyze Q2 compliance gaps, map risk levels, and generate a remediation plan..."'
                 disabled={isSubmittingGoal}
                 className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 font-mono focus:outline-none disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={!goalPrompt.trim() || isSubmittingGoal}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 disabled:opacity-40 transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)] whitespace-nowrap flex-shrink-0"
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 hover:brightness-110 hover:-translate-y-[1px] active:scale-95 disabled:opacity-40 transition-all duration-150 shadow-[0_0_15px_rgba(94,224,255,0.4)] whitespace-nowrap flex-shrink-0 cursor-pointer"
               >
                 {isSubmittingGoal ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Running…</span>
+                    <span>Executing…</span>
                   </>
                 ) : (
                   <>
-                    <span>Run Goal ↵</span>
+                    <span>Execute Goal ⌘↵</span>
                   </>
                 )}
               </button>

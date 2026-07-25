@@ -89,10 +89,10 @@ export default function Navbar() {
   };
 
   const pillNavItems = [
-    { label: "Dashboard", href: "/" },
-    { label: "Direct Goal", href: "#goal" },
-    { label: "Meeting Ingest", href: "#meeting" },
-    { label: "Terminal", href: "#terminal" },
+    { id: "dash", label: "Dashboard", href: "/" },
+    { id: "studio", label: "Agent Studio", href: "#studio" },
+    { id: "logs", label: "Logs & Terminal", href: "#terminal" },
+    { id: "integrations", label: "Integrations", href: "#integrations" },
   ];
 
   return (
