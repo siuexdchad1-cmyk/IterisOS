@@ -23,15 +23,16 @@
   --status-warning: #5EE0FF;
   --status-danger: #FF5C5C;
 
+  /* Space Grotesk applied to ALL text across the entire application */
   --font-display: 'Space Grotesk', -apple-system, sans-serif;
-  --font-ui: 'Inter', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-ui: 'Space Grotesk', -apple-system, sans-serif;
+  --font-mono: 'Space Grotesk', 'JetBrains Mono', monospace;
 }
 
 body {
   background: var(--ink-950);
   color: var(--fg);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
   line-height: 1.5;
   min-height: 100vh;
   overflow-x: hidden;
@@ -43,7 +44,7 @@ body {
 }
 
 .mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', monospace;
 }
 
 /* Single Theme Accent Two-Agent Split */
@@ -70,7 +71,7 @@ body {
 }
 
 .agent-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -99,7 +100,7 @@ body {
 }
 
 .agent-example {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', monospace;
   font-size: 12.5px;
   color: var(--fg-faint);
   border-left: 2px solid var(--line);
@@ -159,7 +160,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 13px;
   color: var(--accent);
   margin-bottom: 20px;

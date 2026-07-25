@@ -96,7 +96,7 @@ export default function DashboardPage() {
               }`}
             >
               <Zap className="w-4 h-4 text-[#5EE0FF]" />
-              <span>⚡ Goal Agent</span>
+              <span>Goal Agent</span>
             </button>
 
             <button
@@ -108,7 +108,7 @@ export default function DashboardPage() {
               }`}
             >
               <Mic className="w-4 h-4 text-[#5EE0FF]" />
-              <span>🎙️ Meeting Agent</span>
+              <span>Meeting Agent</span>
             </button>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                         : step.status === "in_progress"
                         ? "bg-[#5EE0FF]/10 border-[#5EE0FF]/40 text-white shadow-[0_0_12px_rgba(94,224,255,0.2)]"
                         : step.status === "awaiting_approval"
-                        ? "bg-[#FFB84D]/10 border-[#FFB84D]/40 text-white"
+                        ? "bg-[#5EE0FF]/10 border-[#5EE0FF]/40 text-white"
                         : "bg-white/5 border-white/10 text-gray-400"
                     }`}
                   >
@@ -150,7 +150,7 @@ export default function DashboardPage() {
                       ) : step.status === "in_progress" ? (
                         <div className="w-2 h-2 rounded-full bg-[#5EE0FF] animate-ping" />
                       ) : (
-                        <Clock className="w-3.5 h-3.5 text-[#FFB84D]" />
+                        <Clock className="w-3.5 h-3.5 text-[#5EE0FF]" />
                       )}
                     </div>
                     <p className="font-sans text-xs font-medium leading-snug">{step.description}</p>
@@ -170,12 +170,8 @@ export default function DashboardPage() {
                     Live Reasoning Log & Trace
                   </h2>
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border ${
-                  agentMode === "goal"
-                    ? "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/30"
-                    : "bg-[#5EE0FF]/15 text-[#5EE0FF] border-[#5EE0FF]/30"
-                }`}>
-                  {agentMode === "goal" ? "⚡ Goal Agent Active" : "🎙️ Meeting Agent Active"}
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border bg-[#5EE0FF]/15 text-[#5EE0FF] border-[#5EE0FF]/30">
+                  {agentMode === "goal" ? "Goal Agent Active" : "Meeting Agent Active"}
                 </span>
               </div>
 
