@@ -214,11 +214,12 @@ export default function DualInputSwitcher() {
           throw new Error(data.error || "No text extracted from audio");
         }
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Audio transcription failed";
+        const msg = err instanceof Error ? err.message : "Audio transcription unavailable";
         console.warn("Audio transcription error:", msg);
-        appendLog("warning", `Audio transcription fallback used for ${file.name}: ${msg}`);
-        setRawTranscript(
-          `[Audio Transcript extracted from ${file.name}]\n\nElena Rostova: "We need the Tokyo node live by Friday, but Marcus has a deadline conflict with the security audit."\nMarcus Vance: "I can handle the GDPR compliance audit if Sarah takes over APAC deployment."\nSarah Chen: "Agreed. I will provision the Tokyo AP-Northeast edge cluster by Thursday."`
+        appendLog("warning", `Audio transcription requires API key or text input for ${file.name}: ${msg}`);
+        setRawTranscript("");
+        setMeetingError(
+          `Audio file (${file.name}) attached. Please paste the transcript text below or configure OPENAI_API_KEY in .env.local for automatic Whisper STT transcription.`
         );
       } finally {
         setIsTranscribingAudio(false);

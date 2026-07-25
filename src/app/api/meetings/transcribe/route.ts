@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (e) {
-        console.warn("[meetings/transcribe] OpenAI Whisper failed, attempting next service:", e);
+        console.warn("[meetings/transcribe] OpenAI Whisper failed:", e);
       }
     }
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (e) {
-        console.warn("[meetings/transcribe] Groq Whisper failed, attempting fallback:", e);
+        console.warn("[meetings/transcribe] Groq Whisper failed:", e);
       }
     }
 
@@ -98,20 +98,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Default Audio Transcript Extraction Fallback
-    // Generates a clean structured transcript based on the audio filename
-    const cleanBaseName = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-    const extractedText = `[Audio Transcript extracted from ${fileName}]
-
-Elena Rostova: "We need the Tokyo node live by Friday, but Marcus has a deadline conflict with the security audit."
-Marcus Vance: "I can handle the GDPR compliance audit if Sarah takes over the APAC deployment."
-Sarah Chen: "Agreed. I will provision the Tokyo AP-Northeast edge cluster and run latency benchmarks by Thursday."
-Elena Rostova: "Perfect. Let's enforce automated Slack reminders every 24 hours for any high-priority action items."`;
-
-    return NextResponse.json({
-      text: extractedText,
-      source: "audio_extractor_engine",
-    });
+    // If no Whisper API keys are configured, return clear status without fake scripts
+    return NextResponse.json(
+      {
+        error: "Server-side Whisper API key (OPENAI_API_KEY or GROQ_API_KEY) is missing in .env.local. Please paste the written transcript text below or configure a Whisper API key.",
+        source: "none",
+      },
+      { status: 422 }
+    );
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Transcription error";
     console.error("[meetings/transcribe] Server Error:", msg);
