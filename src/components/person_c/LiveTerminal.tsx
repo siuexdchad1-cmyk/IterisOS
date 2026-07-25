@@ -81,6 +81,9 @@ export default function LiveTerminal() {
                       #{stepNum}
                     </span>
                     {getStatusIcon(log.level)}
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono uppercase font-bold tracking-wider bg-white/5 text-[#5EE0FF] border border-white/10 flex-shrink-0">
+                      {log.level === "tool_call" ? "TOOL CALL" : log.level === "success" ? "OBSERVE" : index % 3 === 0 ? "PLAN" : "ADJUST"}
+                    </span>
                     <span className="text-xs text-gray-200 font-sans truncate font-medium">
                       {log.message}
                     </span>
