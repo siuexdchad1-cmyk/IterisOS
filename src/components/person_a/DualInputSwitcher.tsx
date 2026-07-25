@@ -154,7 +154,32 @@ export default function DualInputSwitcher() {
         `Meeting Agent complete. ${data.decisions.length} decision(s), ${data.actionItems.length} action item(s) extracted.`,
         { decisionsCount: data.decisions.length, actionItemsCount: data.actionItems.length }
       );
-      showSuccess(`Parsed ${fname}: ${data.decisions.length} decision(s), ${data.actionItems.length} action item(s)`);
+
+      // ── Seamless Handoff: Pass extracted summary directly to Direct Goal Agent ──
+      const primaryInsight = data.decisions?.[0]?.summary || cleanText.slice(0, 150);
+      const autoGoalPrompt = `Execute action plan and resolve objectives for "${fname}": ${primaryInsight}`;
+
+      appendLog("info", `Seamless Handoff → Passing summary to Direct Goal Agent...`);
+
+      try {
+        const goalRes = await fetch("/api/goals/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: autoGoalPrompt }),
+        });
+
+        if (goalRes.ok) {
+          const goalData = await goalRes.json();
+          if (goalData.summary) {
+            addGoalResult(goalData.summary, goalData.steps, autoGoalPrompt);
+            appendLog("success", `Direct Goal Agent complete. Answer directly rendered.`);
+          }
+        }
+      } catch (e) {
+        console.warn("Auto goal execution error:", e);
+      }
+
+      showSuccess(`Parsed ${fname}: Summary & Answer generated directly.`);
       setMeetingFileName("");
       setRawTranscript("");
     } catch (err: unknown) {
