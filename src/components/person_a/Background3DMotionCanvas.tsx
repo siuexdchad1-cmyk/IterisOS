@@ -1,148 +1,130 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 
-const TOTAL_FRAMES = 300;
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  baseAlpha: number;
+}
 
 export default function Background3DMotionCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  
-  const currentFrameRef = useRef(0);
-  const targetFrameRef = useRef(0);
-  const animFrameIdRef = useRef<number | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const mouseRef = useRef({ x: -1000, y: -1000 });
 
-  // Preload all 300 frames
   useEffect(() => {
-    let loadedCount = 0;
-    const loadedImages: HTMLImageElement[] = [];
-
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image();
-      const frameNum = String(i).padStart(3, "0");
-      img.src = `/3dmotion/ezgif-frame-${frameNum}.jpg`;
-
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === TOTAL_FRAMES) setLoaded(true);
-      };
-
-      img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === TOTAL_FRAMES) setLoaded(true);
-      };
-
-      loadedImages.push(img);
-    }
-
-    imagesRef.current = loadedImages;
-  }, []);
-
-  // Draw frame on full-screen background canvas
-  const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const idx = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(frameIdx)));
-    const img = imagesRef.current[idx];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
+    let animId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const particles: Particle[] = [];
+    const PARTICLE_COUNT = Math.min(80, Math.floor((width * height) / 18000));
 
-    // Fill background with #0A0D14
-    ctx.fillStyle = "#0A0D14";
-    ctx.fillRect(0, 0, width, height);
-
-    const imgRatio = img.naturalWidth / img.naturalHeight;
-    const canvasRatio = width / height;
-
-    let drawWidth = width;
-    let drawHeight = height;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    if (canvasRatio > imgRatio) {
-      drawWidth = width;
-      drawHeight = width / imgRatio;
-      offsetY = (height - drawHeight) / 2;
-    } else {
-      drawHeight = height;
-      drawWidth = height * imgRatio;
-      offsetX = (width - drawWidth) / 2;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        radius: Math.random() * 1.5 + 1,
+        baseAlpha: Math.random() * 0.4 + 0.2,
+      });
     }
 
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-  }, []);
-
-  // Smooth lerp render loop for low scroll sensitivity (fluid Apple physics)
-  useEffect(() => {
-    const loop = () => {
-      // Lerp current frame towards target frame smoothly (0.06 dampening factor)
-      const diff = targetFrameRef.current - currentFrameRef.current;
-      if (Math.abs(diff) > 0.01) {
-        currentFrameRef.current += diff * 0.06;
-        drawFrame(currentFrameRef.current);
-      }
-      animFrameIdRef.current = requestAnimationFrame(loop);
-    };
-
-    animFrameIdRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
-    };
-  }, [drawFrame]);
-
-  // Handle Canvas Resize
-  useEffect(() => {
     const handleResize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth;
-        canvasRef.current.height = window.innerHeight;
-        drawFrame(currentFrameRef.current);
-      }
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     };
 
-    handleResize();
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+    };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [drawFrame]);
+    window.addEventListener("mousemove", handleMouseMove);
 
-  // Gentle, dampened scroll tracking (low sensitivity)
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollHeight <= 0) return;
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
 
-      const currentScroll = window.scrollY;
-      // Controlled ratio mapping with dampening so scrolling doesn't jump frames
-      const ratio = Math.max(0, Math.min(1, currentScroll / Math.max(scrollHeight, 1800)));
+      // Background base
+      ctx.fillStyle = "#0A0D10";
+      ctx.fillRect(0, 0, width, height);
 
-      targetFrameRef.current = ratio * (TOTAL_FRAMES - 1);
+      // Draw particle constellation mesh
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+
+        // Move
+        p1.x += p1.vx;
+        p1.y += p1.vy;
+
+        // Bounce
+        if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+        if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+        // Draw particle dot
+        ctx.beginPath();
+        ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(94, 224, 255, ${p1.baseAlpha})`;
+        ctx.fill();
+
+        // Connect nearby particles with subtle Cyan mesh lines
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 130) {
+            const alpha = (1 - dist / 130) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(94, 224, 255, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+
+        // Connect to mouse pointer
+        const mdx = p1.x - mouseRef.current.x;
+        const mdy = p1.y - mouseRef.current.y;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+
+        if (mdist < 160) {
+          const mAlpha = (1 - mdist / 160) * 0.35;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(mouseRef.current.x, mouseRef.current.y);
+          ctx.strokeStyle = `rgba(94, 224, 255, ${mAlpha})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
+      animId = requestAnimationFrame(draw);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    draw();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
-
-  // Initial draw when loaded
-  useEffect(() => {
-    if (loaded) {
-      drawFrame(0);
-    }
-  }, [loaded, drawFrame]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 opacity-30 mix-blend-screen overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full object-cover"
-      />
+    <div className="fixed inset-0 pointer-events-none z-0 opacity-40 overflow-hidden">
+      <canvas ref={canvasRef} className="w-full h-full block" />
     </div>
   );
 }
