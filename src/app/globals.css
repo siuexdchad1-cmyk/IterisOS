@@ -5,14 +5,14 @@
   --ink-900: #12161B;
   --ink-850: #171C22;
   --ink-800: #1E242B;
-  --line: #262D35;
+  --line: rgba(255, 255, 255, 0.12);
   --fg: #E7ECEF;
   --fg-muted: #8791A0;
   --fg-faint: #4E5661;
   --goal: #FFB454;
-  --goal-dim: #4A3A24;
+  --goal-dim: rgba(255, 180, 84, 0.15);
   --meeting: #5ED3C8;
-  --meeting-dim: #22403C;
+  --meeting-dim: rgba(94, 211, 200, 0.15);
 
   --accent-cyan: #5ED3C8;
   --status-success: #3DDC84;
@@ -33,9 +33,9 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   background-image:
-    linear-gradient(var(--ink-950) 0%, var(--ink-950) 100%),
-    radial-gradient(circle at 15% 0%, rgba(255,180,84,0.05), transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(94,211,200,0.05), transparent 40%);
+    radial-gradient(ellipse at 50% 0%, rgba(94, 211, 200, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 15% 30%, rgba(255, 180, 84, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 70%, rgba(94, 211, 200, 0.08) 0%, transparent 45%);
   background-attachment: fixed;
 }
 
@@ -47,30 +47,59 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Two-agent split styling from home.html */
+/* Glassmorphic Navbar */
+nav.glass-nav {
+  background: rgba(10, 13, 16, 0.65);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Two-agent split glassmorphism styling */
 .agent-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 28px;
+  overflow: visible;
   margin-bottom: 64px;
 }
 
 .agent-card {
-  background: var(--ink-900);
+  background: rgba(18, 22, 27, 0.55);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
   padding: 32px;
   position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
 .agent-card.goal {
-  border-top: 2px solid var(--goal);
+  border-top: 3px solid var(--goal);
+}
+
+.agent-card.goal:hover {
+  border-color: rgba(255, 180, 84, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 30px rgba(255, 180, 84, 0.2);
 }
 
 .agent-card.meeting {
-  border-top: 2px solid var(--meeting);
+  border-top: 3px solid var(--meeting);
+}
+
+.agent-card.meeting:hover {
+  border-color: rgba(94, 211, 200, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 30px rgba(94, 211, 200, 0.2);
 }
 
 .agent-tag {
@@ -78,21 +107,24 @@ body {
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
   display: inline-block;
   margin-bottom: 18px;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
 .goal .agent-tag {
   color: var(--goal);
   background: var(--goal-dim);
+  border-color: rgba(255, 180, 84, 0.3);
 }
 
 .meeting .agent-tag {
   color: var(--meeting);
   background: var(--meeting-dim);
+  border-color: rgba(94, 211, 200, 0.3);
 }
 
 .agent-card h3 {
@@ -113,12 +145,12 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12.5px;
   color: var(--fg-faint);
-  border-left: 2px solid var(--line);
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
   padding-left: 12px;
   line-height: 1.6;
 }
 
-/* Trace sequence from home.html */
+/* Glass Trace Sequence */
 .trace-section {
   max-width: 1120px;
   margin: 0 auto;
@@ -144,38 +176,51 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0;
+  gap: 16px;
 }
 
 .trace-line {
   position: absolute;
-  top: 19px;
+  top: 24px;
   left: 6%;
   right: 6%;
   height: 1px;
-  background: linear-gradient(90deg, var(--goal), var(--line) 40%, var(--line) 60%, var(--meeting));
+  background: linear-gradient(90deg, var(--goal), rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.15) 60%, var(--meeting));
 }
 
 .trace-step {
   position: relative;
-  padding-right: 20px;
+  background: rgba(18, 22, 27, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+}
+
+.trace-step:hover {
+  border-color: rgba(94, 211, 200, 0.3);
+  transform: translateY(-2px);
 }
 
 .trace-num {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: var(--ink-900);
-  border: 1px solid var(--line);
+  background: rgba(10, 13, 16, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: var(--fg-muted);
-  margin-bottom: 20px;
+  color: var(--meeting);
+  margin-bottom: 16px;
   position: relative;
   z-index: 1;
+  box-shadow: 0 0 15px rgba(94, 211, 200, 0.2);
 }
 
 .trace-step h4 {
@@ -192,29 +237,30 @@ body {
   line-height: 1.5;
 }
 
-/* Apple/Glass panel styling fallback */
+/* Glass panel global utility */
 .glass-panel {
-  background-color: var(--ink-900);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+  background-color: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.55);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 180, 84, 0.3);
+  border-color: rgba(94, 211, 200, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 30px 60px -12px rgba(94, 211, 200, 0.15);
 }
 
-/* Responsive breakpoint from home.html */
+/* Responsive breakpoint */
 @media (max-width: 760px) {
   .agent-split {
     grid-template-columns: 1fr;
   }
   .trace {
     grid-template-columns: 1fr 1fr;
-    row-gap: 36px;
+    row-gap: 20px;
   }
   .trace-line {
     display: none;
