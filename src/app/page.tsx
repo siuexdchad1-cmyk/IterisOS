@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import DualInputSwitcher from "@/components/person_a/DualInputSwitcher";
 import DashboardShell from "@/components/person_a/DashboardShell";
 import Background3DMotionCanvas from "@/components/person_a/Background3DMotionCanvas";
+import SplitText from "@/components/SplitText";
 
 export default function Home() {
   const router = useRouter();
@@ -43,10 +44,20 @@ export default function Home() {
           <span>InnovaHack Chapter-1 · Domain 4</span>
         </div>
 
-        <h1 className="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight max-w-[760px] mb-6 text-white">
-          Two agents.<br />
-          <span className="text-[#8791A0]">One shell to run them in.</span>
-        </h1>
+        <div className="max-w-[760px] mb-6">
+          <SplitText
+            tag="h1"
+            text="Two agents. One shell to run them in."
+            className="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight text-white"
+            delay={30}
+            duration={0.8}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 30 }}
+            to={{ opacity: 1, y: 0 }}
+            textAlign="left"
+          />
+        </div>
 
         <p className="text-lg text-[#8791A0] max-w-[560px] mb-9 font-sans leading-relaxed">
           Give it a goal — it plans, calls tools, retries what fails, and shows its work. Give it a meeting — it pulls out the decisions and chases the follow-ups.
