@@ -357,7 +357,7 @@ export default function DualInputSwitcher() {
                 type="text"
                 value={goalPrompt}
                 onChange={(e) => { setGoalPrompt(e.target.value); setGoalError(null); }}
-                placeholder='e.g. "Find and summarise every open compliance gap from Q2 and propose a remediation plan"'
+                placeholder="$ Type a goal or upload meeting transcript..."
                 disabled={isSubmittingGoal}
                 className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 font-mono focus:outline-none disabled:opacity-50"
               />
@@ -373,8 +373,7 @@ export default function DualInputSwitcher() {
                   </>
                 ) : (
                   <>
-                    <span>Run Goal</span>
-                    <Send className="w-3.5 h-3.5" />
+                    <span>Run Goal ↵</span>
                   </>
                 )}
               </button>
