@@ -6,7 +6,6 @@ import Navbar from "@/components/person_a/Navbar";
 import DualInputSwitcher from "@/components/person_a/DualInputSwitcher";
 import DashboardShell from "@/components/person_a/DashboardShell";
 import Background3DMotionCanvas from "@/components/person_a/Background3DMotionCanvas";
-import LiquidChrome from "@/components/LiquidChrome/LiquidChrome";
 
 const fade = {
   hidden: { opacity: 0, y: 14 },
@@ -22,18 +21,6 @@ export default function Home() {
     <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-20 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF]">
       {/* 3D Motion Fullscreen Background Canvas */}
       <Background3DMotionCanvas />
-
-      {/* LiquidChrome Interactive Shader Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-30 mix-blend-screen">
-        <LiquidChrome
-          baseColor={[0.05, 0.2, 0.35]}
-          speed={0.4}
-          amplitude={0.4}
-          frequencyX={2.5}
-          frequencyY={1.5}
-          interactive={true}
-        />
-      </div>
 
       {/* Navbar with Supabase Auth */}
       <Navbar />
