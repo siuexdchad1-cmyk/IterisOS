@@ -1,120 +1,222 @@
 @import "tailwindcss";
 
 :root {
-  --ink-950: #0A0D14;
-  --ink-900: #121620;
-  --ink-800: #1E2330;
-  --ink-700: #2D3446;
-  
-  /* Agent Color Tokens */
-  --goal: #FFB84D;
-  --goal-glow: rgba(255, 184, 77, 0.25);
-  --meeting: #5EE0FF;
-  --meeting-glow: rgba(94, 224, 255, 0.25);
+  --ink-950: #0A0D10;
+  --ink-900: #12161B;
+  --ink-850: #171C22;
+  --ink-800: #1E242B;
+  --line: #262D35;
+  --fg: #E7ECEF;
+  --fg-muted: #8791A0;
+  --fg-faint: #4E5661;
+  --goal: #FFB454;
+  --goal-dim: #4A3A24;
+  --meeting: #5ED3C8;
+  --meeting-dim: #22403C;
 
-  --accent-cyan: #5EE0FF;
+  --accent-cyan: #5ED3C8;
   --status-success: #3DDC84;
-  --status-warning: #FFB84D;
+  --status-warning: #FFB454;
   --status-danger: #FF5C5C;
-  
-  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 body {
-  background-color: var(--ink-950);
-  color: #F3F4F6;
-  font-family: var(--font-ui);
+  background: var(--ink-950);
+  color: var(--fg);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--ink-950) 0%, var(--ink-950) 100%),
+    radial-gradient(circle at 15% 0%, rgba(255,180,84,0.05), transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(94,211,200,0.05), transparent 40%);
+  background-attachment: fixed;
 }
 
-/* Subtle tech grid overlay pattern */
-.bg-tech-grid {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 32px 32px;
+.display {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
-/* Agent Amber / Teal Split Utilities */
-.agent-goal-accent {
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Two-agent split styling from home.html */
+.agent-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 64px;
+}
+
+.agent-card {
+  background: var(--ink-900);
+  padding: 32px;
+  position: relative;
+}
+
+.agent-card.goal {
+  border-top: 2px solid var(--goal);
+}
+
+.agent-card.meeting {
+  border-top: 2px solid var(--meeting);
+}
+
+.agent-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 18px;
+  font-weight: 600;
+}
+
+.goal .agent-tag {
   color: var(--goal);
+  background: var(--goal-dim);
 }
 
-.agent-goal-border {
-  border-color: rgba(255, 184, 77, 0.3);
-}
-
-.agent-goal-bg {
-  background-color: rgba(255, 184, 77, 0.1);
-}
-
-.agent-meeting-accent {
+.meeting .agent-tag {
   color: var(--meeting);
+  background: var(--meeting-dim);
 }
 
-.agent-meeting-border {
-  border-color: rgba(94, 224, 255, 0.3);
+.agent-card h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
-.agent-meeting-bg {
-  background-color: rgba(94, 224, 255, 0.1);
+.agent-card p {
+  color: var(--fg-muted);
+  font-size: 14.5px;
+  margin-bottom: 20px;
 }
 
-/* Apple-style ultra-glass panel tokens with rounded curves */
+.agent-example {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--fg-faint);
+  border-left: 2px solid var(--line);
+  padding-left: 12px;
+  line-height: 1.6;
+}
+
+/* Trace sequence from home.html */
+.trace-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px 110px;
+}
+
+.trace-header {
+  margin-bottom: 48px;
+}
+
+.trace-header .eyebrow {
+  margin-bottom: 14px;
+}
+
+.trace-header h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.trace {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.trace-line {
+  position: absolute;
+  top: 19px;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--goal), var(--line) 40%, var(--line) 60%, var(--meeting));
+}
+
+.trace-step {
+  position: relative;
+  padding-right: 20px;
+}
+
+.trace-num {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.trace-step h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.trace-step p {
+  color: var(--fg-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Apple/Glass panel styling fallback */
 .glass-panel {
-  background-color: rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 1.75rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+  background-color: var(--ink-900);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(94, 224, 255, 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 30px 60px -12px rgba(94, 224, 255, 0.12);
+  border-color: rgba(255, 180, 84, 0.3);
 }
 
-.glass-pill {
-  background-color: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 9999px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-/* Custom Scrollbar for terminal & lists */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(10, 13, 20, 0.6);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(94, 224, 255, 0.4);
-}
-
-/* Reduced motion preference compliance */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+/* Responsive breakpoint from home.html */
+@media (max-width: 760px) {
+  .agent-split {
+    grid-template-columns: 1fr;
+  }
+  .trace {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 36px;
+  }
+  .trace-line {
+    display: none;
   }
 }

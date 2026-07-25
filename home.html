@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IterisOS — Two Agents. One Shell.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#0A0D10;
+    --ink-900:#12161B;
+    --ink-850:#171C22;
+    --ink-800:#1E242B;
+    --line:#262D35;
+    --fg:#E7ECEF;
+    --fg-muted:#8791A0;
+    --fg-faint:#4E5661;
+    --goal:#FFB454;
+    --goal-dim:#4A3A24;
+    --meeting:#5ED3C8;
+    --meeting-dim:#22403C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--ink-950);
+    color:var(--fg);
+    font-family:'Inter', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Space Grotesk', sans-serif;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* subtle background texture — a faint trace grid, not a glow */
+  body{
+    background-image:
+      linear-gradient(var(--ink-950) 0%, var(--ink-950) 100%),
+      radial-gradient(circle at 15% 0%, rgba(255,180,84,0.05), transparent 40%),
+      radial-gradient(circle at 85% 20%, rgba(94,211,200,0.05), transparent 40%);
+  }
+
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:1120px; margin:0 auto; padding:28px 24px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Space Grotesk'; font-weight:600; font-size:18px; letter-spacing:0.02em;
+  }
+  .logo-mark{
+    width:20px; height:20px; border:1.5px solid var(--fg); border-radius:4px;
+    position:relative;
+  }
+  .logo-mark::after{
+    content:''; position:absolute; inset:4px; background:var(--goal); border-radius:1px;
+  }
+  nav a{color:var(--fg-muted); text-decoration:none; font-size:14px; margin-left:28px;}
+  nav a:hover{color:var(--fg);}
+  .nav-cta{
+    color:var(--ink-950) !important; background:var(--fg); padding:9px 16px; border-radius:6px;
+    font-weight:500;
+  }
+
+  .hero{
+    max-width:1120px; margin:0 auto; padding:80px 24px 60px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:0.08em; color:var(--fg-faint);
+    text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow-dot{width:6px; height:6px; border-radius:50%; background:var(--goal);}
+  h1{
+    font-family:'Space Grotesk'; font-weight:600; font-size:clamp(38px, 5.5vw, 64px);
+    line-height:1.05; letter-spacing:-0.02em; max-width:760px; margin-bottom:24px;
+  }
+  h1 span{color:var(--fg-muted);}
+  .subhead{
+    font-size:18px; color:var(--fg-muted); max-width:560px; margin-bottom:36px;
+  }
+  .hero-ctas{display:flex; gap:14px; margin-bottom:64px;}
+  .btn-primary{
+    background:var(--goal); color:#1A1200; border:none; padding:13px 22px; border-radius:7px;
+    font-weight:600; font-size:15px; cursor:pointer; font-family:'Inter';
+  }
+  .btn-secondary{
+    background:transparent; color:var(--fg); border:1px solid var(--line); padding:13px 22px;
+    border-radius:7px; font-weight:500; font-size:15px; cursor:pointer; font-family:'Inter';
+  }
+
+  /* Two-agent split — the signature element */
+  .agent-split{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    margin-bottom:100px;
+  }
+  .agent-card{
+    background:var(--ink-900); padding:32px; position:relative;
+  }
+  .agent-card.goal{border-top:2px solid var(--goal);}
+  .agent-card.meeting{border-top:2px solid var(--meeting);}
+  .agent-tag{
+    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:4px 8px; border-radius:4px; display:inline-block; margin-bottom:18px;
+  }
+  .goal .agent-tag{color:var(--goal); background:var(--goal-dim);}
+  .meeting .agent-tag{color:var(--meeting); background:var(--meeting-dim);}
+  .agent-card h3{font-family:'Space Grotesk'; font-size:22px; margin-bottom:10px; font-weight:600;}
+  .agent-card p{color:var(--fg-muted); font-size:14.5px; margin-bottom:20px;}
+  .agent-example{
+    font-family:'JetBrains Mono'; font-size:12.5px; color:var(--fg-faint);
+    border-left:2px solid var(--line); padding-left:12px; line-height:1.6;
+  }
+
+  /* Trace sequence — legitimate use of numbering: this IS a real ordered pipeline */
+  .trace-section{max-width:1120px; margin:0 auto; padding:0 24px 110px;}
+  .trace-header{margin-bottom:48px;}
+  .trace-header .eyebrow{margin-bottom:14px;}
+  .trace-header h2{font-family:'Space Grotesk'; font-size:32px; font-weight:600;}
+  .trace{position:relative; display:grid; grid-template-columns:repeat(4, 1fr); gap:0;}
+  .trace-line{
+    position:absolute; top:19px; left:6%; right:6%; height:1px;
+    background:linear-gradient(90deg, var(--goal), var(--line) 40%, var(--line) 60%, var(--meeting));
+  }
+  .trace-step{position:relative; padding-right:20px;}
+  .trace-num{
+    width:38px; height:38px; border-radius:50%; background:var(--ink-900); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono'; font-size:13px;
+    color:var(--fg-muted); margin-bottom:20px; position:relative; z-index:1;
+  }
+  .trace-step h4{font-family:'Space Grotesk'; font-size:16px; margin-bottom:8px; font-weight:600;}
+  .trace-step p{color:var(--fg-muted); font-size:13.5px; line-height:1.5;}
+
+  footer{
+    max-width:1120px; margin:0 auto; padding:32px 24px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; color:var(--fg-faint); font-size:13px;
+  }
+
+  @media (max-width:760px){
+    .agent-split{grid-template-columns:1fr;}
+    .trace{grid-template-columns:1fr 1fr; row-gap:36px;}
+    .trace-line{display:none;}
+    nav a:not(.nav-cta){display:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-mark"></div>IterisOS</div>
+  <div>
+    <a href="#agents">Agents</a>
+    <a href="#pipeline">Pipeline</a>
+    <a class="nav-cta" href="dashboard.html">Open Dashboard →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow"><span class="eyebrow-dot"></span>InnovaHack Chapter-1 · Domain 4</div>
+  <h1>Two agents.<br><span>One shell to run them in.</span></h1>
+  <p class="subhead">Give it a goal — it plans, calls tools, retries what fails, and shows its work. Give it a meeting — it pulls out the decisions and chases the follow-ups.</p>
+  <div class="hero-ctas">
+    <button class="btn-primary" onclick="location.href='dashboard.html'">Open Dashboard</button>
+    <button class="btn-secondary" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">See how it works</button>
+  </div>
+
+  <div class="agent-split" id="agents">
+    <div class="agent-card goal">
+      <span class="agent-tag">Goal Agent</span>
+      <h3>Give it an outcome, not a to-do list.</h3>
+      <p>One instruction gets broken into steps, executed against tools, retried on failure, and summarized when done.</p>
+      <div class="agent-example">→ "Find the cheapest flight + hotel<br>&nbsp;&nbsp;combo under ₹15,000 for next weekend"</div>
+    </div>
+    <div class="agent-card meeting">
+      <span class="agent-tag">Meeting Agent</span>
+      <h3>Feed it a transcript, get the decisions.</h3>
+      <p>Ingests a meeting and extracts decisions, owners, and action items — then dispatches the reminders itself.</p>
+      <div class="agent-example">→ "Q3_Architecture_Review_Transcript.vtt"<br>&nbsp;&nbsp;→ 3 decisions, 3 action items, 2 reminders</div>
+    </div>
+  </div>
+</section>
+
+<section class="trace-section" id="pipeline">
+  <div class="trace-header">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>How the goal agent runs</div>
+    <h2>Every run is one visible trace.</h2>
+  </div>
+  <div class="trace">
+    <div class="trace-line"></div>
+    <div class="trace-step">
+      <div class="trace-num">01</div>
+      <h4>Plan</h4>
+      <p>Breaks the instruction into an ordered list of sub-tasks it can actually execute.</p>
+    </div>
+    <div class="trace-step">
+      <div class="trace-num">02</div>
+      <h4>Act</h4>
+      <p>Calls a tool for one sub-task at a time — real or simulated API.</p>
+    </div>
+    <div class="trace-step">
+      <div class="trace-num">03</div>
+      <h4>Observe &amp; adjust</h4>
+      <p>Checks the result, retries on failure, replans if a step is truly blocked.</p>
+    </div>
+    <div class="trace-step">
+      <div class="trace-num">04</div>
+      <h4>Summarize</h4>
+      <p>Reports what it did, what it chose, and why — in plain language.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>IterisOS — Unified Agentic Shell</span>
+  <span>Domain 4 · Team ITERISOS</span>
+</footer>
+
+</body>
+</html>
