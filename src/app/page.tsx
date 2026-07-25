@@ -12,13 +12,13 @@ const fade = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.4, ease: "easeOut" },
+    transition: { delay: i * 0.1, duration: 0.35, ease: "easeOut" },
   }),
 };
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-20 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF] overflow-x-hidden">
+    <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-16 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF] overflow-x-hidden">
       {/* 8-second Ambient Glow Pulsing Background */}
       <motion.div
         animate={{ opacity: [0.15, 0.3, 0.15] }}
@@ -32,19 +32,19 @@ export default function Home() {
       {/* Navbar with Supabase Auth & PillNav */}
       <Navbar />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 pt-24 space-y-6">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 pt-16 md:pt-20 space-y-4">
         {/* Hero Header */}
         <motion.div
           custom={0}
           variants={fade}
           initial="hidden"
           animate="visible"
-          className="text-center py-6 space-y-3"
+          className="text-center py-2 space-y-2"
         >
-          <h1 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight leading-tight">
+          <h1 className="font-display font-extrabold text-2xl md:text-4xl text-white tracking-tight leading-tight">
             Iteris OS — <span className="text-[#5EE0FF]">Autonomous Execution Engine</span>
           </h1>
-          <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto font-sans leading-relaxed">
+          <p className="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto font-sans leading-relaxed">
             Deploy autonomous workflows in seconds. Input high-level objectives or upload meeting audio to auto-extract and execute action items.
           </p>
         </motion.div>
@@ -54,7 +54,7 @@ export default function Home() {
           custom={1}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
         >
           <DualInputSwitcher />
         </motion.div>
@@ -70,7 +70,7 @@ export default function Home() {
           variants={fade}
           initial="hidden"
           animate="visible"
-          className="pt-8 border-t border-white/10 text-center text-xs font-mono text-gray-600"
+          className="pt-6 border-t border-white/10 text-center text-xs font-mono text-gray-600"
         >
           Iteris OS · Domain 4 Hackathon
         </motion.div>
