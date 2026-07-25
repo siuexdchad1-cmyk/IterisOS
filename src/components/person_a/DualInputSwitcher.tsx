@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic,
@@ -41,6 +41,7 @@ export default function DualInputSwitcher() {
   const [dragActive, setDragActive] = useState(false);
   const [isSubmittingMeeting, setIsSubmittingMeeting] = useState(false);
   const [meetingError, setMeetingError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Success toast
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
@@ -113,6 +114,18 @@ export default function DualInputSwitcher() {
       return;
     }
 
+    // Detect if raw binary content (e.g. audio file byte stream) was submitted as text
+    const isBinaryData =
+      /^[\s\S]{0,60}(ftyp|ID3|\x00|\uFFFD)/.test(text) ||
+      /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(text.slice(0, 300));
+
+    if (isBinaryData) {
+      setMeetingError(
+        "The selected file contains binary audio/video data. Please paste the written transcript text below so the meeting agent can extract decisions and action items."
+      );
+      return;
+    }
+
     setIsSubmittingMeeting(true);
     setMeetingError(null);
     setAgentStatus("thinking");
@@ -158,24 +171,52 @@ export default function DualInputSwitcher() {
     }
   };
 
-  const handleFileDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-    if (e.dataTransfer.files?.[0]) {
-      const file = e.dataTransfer.files[0];
-      setMeetingFileName(file.name);
-      const ext = file.name.split(".").pop()?.toLowerCase();
+  const isAudioOrVideoFile = (filename: string, mimeType?: string) => {
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
+    const audioVideoExts = ["mp3", "wav", "m4a", "mp4", "aac", "ogg", "webm", "flac", "wma", "m4v", "mov", "mkv"];
+    return audioVideoExts.includes(ext) || Boolean(mimeType?.startsWith("audio/") || mimeType?.startsWith("video/"));
+  };
+
+  const processFile = (file: File) => {
+    setMeetingFileName(file.name);
+    setMeetingError(null);
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+
+    if (isAudioOrVideoFile(file.name, file.type)) {
+      setSourceType("audio");
+      setRawTranscript((prev) => {
+        if (!prev || prev.includes("ftyp") || prev.startsWith("[Audio File")) {
+          return `[Audio File Ingested: ${file.name}]\nNote: Audio file selected. Please paste or verify the transcript text for this meeting below to allow the agent to extract decisions and action items.`;
+        }
+        return prev;
+      });
+    } else {
       if (ext === "vtt") setSourceType("vtt");
-      else if (ext === "mp3" || ext === "wav") setSourceType("audio");
       else setSourceType("transcript_text");
 
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (ev.target?.result) {
-          setRawTranscript(ev.target.result.toString().slice(0, 4000));
+          const content = ev.target.result.toString();
+          setRawTranscript(content.slice(0, 8000));
         }
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (e.dataTransfer.files?.[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      processFile(e.target.files[0]);
     }
   };
 
@@ -316,6 +357,7 @@ export default function DualInputSwitcher() {
           >
             {/* Drag & Drop zone */}
             <div
+              onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
               onDragLeave={() => setDragActive(false)}
               onDrop={handleFileDrop}
@@ -325,13 +367,20 @@ export default function DualInputSwitcher() {
                   : "border-white/15 bg-white/5 hover:border-white/30"
               }`}
             >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                accept=".txt,.vtt,.srt,.csv,.md,.mp3,.wav,.m4a,.mp4,.aac,.ogg,.webm,.flac"
+                className="hidden"
+              />
               <div className="flex flex-col items-center space-y-2">
                 <Upload className="w-6 h-6 text-[#5EE0FF]" />
                 <div className="text-xs font-mono text-gray-300">
-                  <span className="font-semibold text-white">Drag & drop</span> a recording or transcript (.mp3 .wav .txt .vtt)
+                  <span className="font-semibold text-white">Click or drag & drop</span> a transcript (.vtt .txt) or audio (.m4a .mp3 .wav)
                 </div>
-                <span className="text-[10px] text-gray-500 font-mono">
-                  {meetingFileName ? `📎 ${meetingFileName}` : "or paste text below"}
+                <span className="text-[10px] text-gray-400 font-mono">
+                  {meetingFileName ? `📎 ${meetingFileName}` : "or paste transcript text below"}
                 </span>
               </div>
             </div>

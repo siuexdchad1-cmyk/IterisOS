@@ -317,11 +317,19 @@ export function IterisProvider({ children }: { children: ReactNode }) {
       followUpChannel: "slack",
     };
 
+    const isBinaryExcerpt =
+      /^[\s\S]{0,60}(ftyp|ID3|\x00|\uFFFD)/.test(rawExcerpt) ||
+      /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(rawExcerpt.slice(0, 200));
+
+    const cleanExcerpt = isBinaryExcerpt
+      ? `Action item from ${fileName || "meeting recording"}`
+      : rawExcerpt.replace(/[\x00-\x1F\x7F-\x9F]/g, "").slice(0, 80).trim() || "Action item extracted from transcript.";
+
     const newTask: AgentTask = {
       id: taskId,
       source: "meeting",
       title: `Action: ${fileName || "Transcript Processing"}`,
-      description: rawExcerpt.slice(0, 80) || "Action item extracted from transcript.",
+      description: cleanExcerpt,
       status: "pending",
       priority: "high",
       owner: { id: "usr-01", name: "Marcus Vance", email: "marcus@iteris.ai" },

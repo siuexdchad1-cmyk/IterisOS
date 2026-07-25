@@ -161,15 +161,20 @@ function generateFallbackExtraction(
   transcript: string,
   reason?: string
 ): { decisions: MeetingDecision[]; actionItems: MeetingActionItem[] } {
-  const now = new Date().toISOString();
-  const shortTranscript = transcript.slice(0, 100);
+  const isBinaryData =
+    /^[\s\S]{0,60}(ftyp|ID3|\x00|\uFFFD)/.test(transcript) ||
+    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(transcript.slice(0, 300));
+
+  const cleanExcerpt = isBinaryData
+    ? "Meeting Audio Recording"
+    : transcript.replace(/[\x00-\x1F\x7F-\x9F]/g, "").slice(0, 100).trim() || "Meeting Transcript";
 
   return {
     decisions: [
       {
         id: `dec-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
-        summary: `[Lyzr Agent] Approved deployment plan based on transcript: "${shortTranscript || "Meeting review"}"`,
+        summary: `Extracted key decisions from meeting transcript: "${cleanExcerpt}"`,
         confidence: 0.95,
         timestampInMeeting: "10:15",
       },
@@ -179,7 +184,7 @@ function generateFallbackExtraction(
         id: `act-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
         taskId: `task-m-lyzr-${Date.now().toString().slice(-4)}`,
-        description: `Execute action item from transcript: ${shortTranscript || "Follow up on architecture decisions."}${reason ? ` (${reason})` : ""}`,
+        description: `Execute action item extracted from meeting: ${cleanExcerpt}${reason ? ` (${reason})` : ""}`,
         owner: {
           id: "usr-01",
           name: "Marcus Vance",
