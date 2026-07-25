@@ -9,6 +9,7 @@ import { useIterisStore } from "@/lib/store";
 import { AgentStatus } from "@/types";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import PillNav from "@/components/PillNav/PillNav";
 
 const statusConfig: Record<
   AgentStatus,
@@ -87,6 +88,13 @@ export default function Navbar() {
     setDropdownOpen(false);
   };
 
+  const pillNavItems = [
+    { label: "Dashboard", href: "/" },
+    { label: "Direct Goal", href: "#" },
+    { label: "Meeting Ingest", href: "#" },
+    { label: "Terminal", href: "#" },
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0A0D14]/80 border-b border-white/10 px-4 md:px-8 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -107,6 +115,20 @@ export default function Navbar() {
             </div>
           </div>
         </Link>
+
+        {/* Center: React Bits PillNav Component */}
+        <div className="hidden md:block">
+          <PillNav
+            items={pillNavItems}
+            activeHref="/"
+            baseColor="#0A0D14"
+            pillColor="rgba(255, 255, 255, 0.08)"
+            pillTextColor="#ffffff"
+            hoveredPillTextColor="#000000"
+            ease="power2.easeOut"
+            initialLoadAnimation={true}
+          />
+        </div>
 
         {/* Right: Controls & Auth */}
         <div className="flex items-center space-x-3">
