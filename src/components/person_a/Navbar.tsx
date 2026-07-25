@@ -116,19 +116,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Center: React Bits PillNav Component */}
-        <div className="hidden md:block">
-          <PillNav
-            items={pillNavItems}
-            activeHref="/"
-            baseColor="#0A0D14"
-            pillColor="rgba(255, 255, 255, 0.08)"
-            pillTextColor="#ffffff"
-            hoveredPillTextColor="#000000"
-            ease="power2.easeOut"
-            initialLoadAnimation={true}
-          />
-        </div>
+
 
         {/* Right: Controls & Auth */}
         <div className="flex items-center space-x-3">
