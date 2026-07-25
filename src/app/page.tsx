@@ -1,51 +1,70 @@
 "use client";
 
-import React, { useState } from "react";
-import SonyNavbar from "@/components/sony/SonyNavbar";
-import SonyHeroScrollytelling from "@/components/sony/SonyHeroScrollytelling";
-import SonyAncSimulator from "@/components/sony/SonyAncSimulator";
-import SonyComponentMatrix from "@/components/sony/SonyComponentMatrix";
-import SonyAudioUpscaler from "@/components/sony/SonyAudioUpscaler";
-import SonyTechSpecs from "@/components/sony/SonyTechSpecs";
-import SonyFooter from "@/components/sony/SonyFooter";
-import SonyBuyModal from "@/components/sony/SonyBuyModal";
+import React from "react";
+import { motion } from "framer-motion";
+import Navbar from "@/components/person_a/Navbar";
+import DualInputSwitcher from "@/components/person_a/DualInputSwitcher";
+import DashboardShell from "@/components/person_a/DashboardShell";
+import Hero3DMotionCanvas from "@/components/person_a/Hero3DMotionCanvas";
+
+const fade = {
+  hidden: { opacity: 0, y: 14 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.3, ease: "easeOut" },
+  }),
+};
 
 export default function Home() {
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
-
-  const handleOpenBuyModal = () => {
-    setBuyModalOpen(true);
-  };
-
-  const handleCloseBuyModal = () => {
-    setBuyModalOpen(false);
-  };
-
   return (
-    <main id="hero" className="min-h-screen bg-[#050505] text-gray-100 selection:bg-[#00D6FF]/30 selection:text-[#00D6FF]">
-      {/* Apple-style Glassmorphism Navigation Bar */}
-      <SonyNavbar onOpenBuyModal={handleOpenBuyModal} />
+    <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-20 selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF]">
+      {/* Iteris OS Navbar with Supabase Auth */}
+      <Navbar />
 
-      {/* Core Scrollytelling Section (450vh canvas image sequence) */}
-      <SonyHeroScrollytelling onOpenBuyModal={handleOpenBuyModal} />
+      <div className="max-w-5xl mx-auto px-4 md:px-8 pt-24 space-y-6">
+        {/* Hero Header */}
+        <motion.div
+          custom={0}
+          variants={fade}
+          initial="hidden"
+          animate="visible"
+          className="text-center py-4 space-y-3"
+        >
+          <h1 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight leading-tight">
+            Iteris <span className="text-[#5EE0FF]">OS</span>
+          </h1>
+          <p className="text-sm md:text-base text-gray-400 max-w-xl mx-auto font-sans">
+            Type a goal and let the agent break it down — or paste a meeting transcript/audio to extract action items and track execution in real time.
+          </p>
+        </motion.div>
 
-      {/* Interactive Active Noise Cancellation Simulator */}
-      <SonyAncSimulator />
+        {/* 3D Motion Showcase Canvas */}
+        <motion.div custom={1} variants={fade} initial="hidden" animate="visible">
+          <Hero3DMotionCanvas />
+        </motion.div>
 
-      {/* Disassembled Component Inspector Showcase Grid */}
-      <SonyComponentMatrix />
+        {/* Input Area (Direct Goal + Meeting Transcriber) */}
+        <motion.div custom={2} variants={fade} initial="hidden" animate="visible">
+          <DualInputSwitcher />
+        </motion.div>
 
-      {/* AI DSEE Extreme Audio Upscaler & Frequency Spectrum Analyzer */}
-      <SonyAudioUpscaler />
+        {/* Dynamic Dashboard Shell */}
+        <motion.div custom={3} variants={fade} initial="hidden" animate="visible">
+          <DashboardShell />
+        </motion.div>
 
-      {/* Tech Specifications Comparison Table */}
-      <SonyTechSpecs onOpenBuyModal={handleOpenBuyModal} />
-
-      {/* Editorial Luxury Tech Footer */}
-      <SonyFooter />
-
-      {/* Pre-Order / Buy Modal */}
-      <SonyBuyModal isOpen={buyModalOpen} onClose={handleCloseBuyModal} />
+        {/* Footer */}
+        <motion.div
+          custom={4}
+          variants={fade}
+          initial="hidden"
+          animate="visible"
+          className="pt-8 border-t border-white/10 text-center text-xs font-mono text-gray-600"
+        >
+          Iteris OS · Domain 4 Hackathon
+        </motion.div>
+      </div>
     </main>
   );
 }
