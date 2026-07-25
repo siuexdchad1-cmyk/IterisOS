@@ -91,7 +91,7 @@ export default function Navbar() {
   const pillNavItems = [
     { id: "dash", label: "Dashboard", href: "/" },
     { id: "studio", label: "Agent Studio", href: "#studio" },
-    { id: "logs", label: "Logs & Terminal", href: "#terminal" },
+    { id: "logs", label: "Trace & Logs", href: "#terminal" },
     { id: "integrations", label: "Integrations", href: "#integrations" },
   ];
 
@@ -218,17 +218,24 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center space-x-2">
+              <div className="hidden sm:flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 text-xs font-mono">
+                <UserIcon className="w-3.5 h-3.5 text-[#5EE0FF]" />
+                <span className="text-gray-300 max-w-[120px] sm:max-w-[180px] truncate">
+                  aryatare38@gmail.com
+                </span>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="p-1 text-gray-400 hover:text-[#5EE0FF] transition-colors ml-1"
+                  title="Sign In"
+                >
+                  <LogOut className="w-3.5 h-3.5 rotate-180" />
+                </button>
+              </div>
               <Link
                 href="/login"
-                className="px-3.5 py-1.5 rounded-xl text-xs font-mono text-gray-300 hover:text-white transition-colors"
+                className="sm:hidden px-3.5 py-1.5 rounded-xl text-xs font-mono text-gray-300 hover:text-white transition-colors"
               >
                 Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-[#5EE0FF] text-black hover:bg-[#5EE0FF]/90 transition-all shadow-[0_0_12px_rgba(94,224,255,0.25)]"
-              >
-                Get Started
               </Link>
             </div>
           )}

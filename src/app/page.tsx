@@ -18,7 +18,7 @@ const fade = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-20 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF]">
+    <main className="min-h-screen bg-[#0A0D14] bg-[radial-gradient(ellipse_at_top,rgba(15,35,48,0.7)_0%,rgba(10,13,20,1)_80%)] bg-tech-grid text-gray-100 pb-20 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF]">
       {/* 3D Motion Fullscreen Background Canvas */}
       <Background3DMotionCanvas />
 

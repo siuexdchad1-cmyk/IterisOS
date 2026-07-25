@@ -135,15 +135,8 @@ export default function DashboardShell() {
               icon={<FileCheck className="w-5 h-5 text-[#3DDC84]" />}
               badge={
                 <span className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#3DDC84]/15 text-[#3DDC84] border border-[#3DDC84]/30">
-                  <span className="relative flex h-2 w-2">
-                    <motion.span
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute inline-flex h-full w-full rounded-full bg-[#3DDC84]"
-                    />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3DDC84]" />
-                  </span>
-                  <span>Completed (100%)</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#3DDC84]" />
+                  <span>Resolved</span>
                 </span>
               }
               className="border-[#3DDC84]/20"
