@@ -37,6 +37,7 @@ export interface GoalPlanStep {
   maxRetries: number;
   requiresClarification: boolean;
   clarificationQuestion?: string;
+  suggestedTool?: string;
   startedAt?: string;
   completedAt?: string;
 }

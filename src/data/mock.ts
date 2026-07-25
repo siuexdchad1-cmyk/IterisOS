@@ -106,6 +106,7 @@ export const initialMockState: IterisOSState = {
       retryCount: 0,
       maxRetries: 3,
       requiresClarification: false,
+      toolCalls: [],
     },
   ],
   goalSummaries: [
