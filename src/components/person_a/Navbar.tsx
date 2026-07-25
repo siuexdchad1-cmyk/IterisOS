@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, ChevronDown, Activity, Sparkles } from "lucide-react";
+import { Cpu, ChevronDown, Activity } from "lucide-react";
 import { useIterisStore } from "@/lib/store";
 import { AgentStatus } from "@/types";
 
@@ -75,14 +75,6 @@ export default function Navbar() {
               Goal & Meeting Agent Visual Shell
             </p>
           </div>
-        </div>
-
-        {/* Center: System Architecture Pill (Hidden on mobile) */}
-        <div className="hidden lg:flex items-center space-x-3 text-xs font-mono px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
-          <Sparkles className="w-3.5 h-3.5 text-[#5EE0FF]" />
-          <span>Domain 4: Dual Agent Interface</span>
-          <span className="text-gray-600">|</span>
-          <span className="text-[#5EE0FF]">Standalone Shell</span>
         </div>
 
         {/* Right: Live Agent Status Pill & Manual Controls */}

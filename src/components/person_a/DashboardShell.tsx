@@ -23,25 +23,50 @@ import StepInspector from "@/components/person_c/StepInspector";
 // Lightweight markdown → JSX renderer (headings, bold, bullets, numbered, newlines)
 function renderMarkdown(text: string) {
   if (!text) return null;
-  const normalized = text.replace(/\\n/g, "\n").replace(/\\t/g, "  ");
+
+  // Normalise escaped newlines from JSON strings
+  let normalized = text
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "  ")
+    // Normalise Lyzr's inconsistent *text:** and **text:** bold patterns → **text:**
+    .replace(/\*([^*\n]+):\*\*/g, "**$1:**")
+    // Remove leftover solo asterisks that aren't part of ** pairs
+    .replace(/(?<!\*)\*(?!\*)/g, "");
+
   return normalized.split("\n").map((line, i) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={i} className="h-1.5" />;
+
+    // Heading: # ## ### (with optional emoji)
     if (/^#{1,3}\s/.test(trimmed)) {
+      const content = trimmed.replace(/^#{1,3}\s/, "");
       return (
-        <p key={i} className="text-[#5EE0FF] font-semibold text-[11px] mt-2 mb-0.5">
-          {inlineBold(trimmed.replace(/^#{1,3}\s/, ""))}
+        <p key={i} className="text-[#5EE0FF] font-semibold text-[11px] mt-2 mb-0.5 font-mono">
+          {inlineBold(content)}
         </p>
       );
     }
-    if (/^[-*|]/.test(trimmed)) {
+
+    // Table separator — skip
+    if (/^[\|\-\s]+$/.test(trimmed)) return null;
+
+    // Table row — render as plain text
+    if (trimmed.startsWith("|")) {
+      const cells = trimmed.split("|").filter(Boolean).map(c => c.trim()).join(" · ");
+      return <p key={i} className="text-gray-400 text-[10px]">{cells}</p>;
+    }
+
+    // Bullet: - or *
+    if (/^[-*]\s/.test(trimmed)) {
       return (
         <div key={i} className="flex items-start gap-1.5 pl-1">
           <span className="text-[#5EE0FF] mt-0.5 flex-shrink-0">›</span>
-          <span>{inlineBold(trimmed.replace(/^[-*|]\s*/, ""))}</span>
+          <span>{inlineBold(trimmed.replace(/^[-*]\s*/, ""))}</span>
         </div>
       );
     }
+
+    // Numbered list
     if (/^\d+[.)]\s/.test(trimmed)) {
       const num = trimmed.match(/^(\d+)/)?.[1];
       return (
@@ -51,13 +76,16 @@ function renderMarkdown(text: string) {
         </div>
       );
     }
+
     return <p key={i}>{inlineBold(trimmed)}</p>;
   });
 }
 
 function inlineBold(text: string): React.ReactNode {
-  const parts = text.split(/\*\*(.*?)\*\*/g);
-  if (parts.length === 1) return text;
+  // Strip remaining stray ** or * that aren't forming valid bold pairs
+  const cleaned = text.replace(/\*{3,}/g, "").replace(/(?<!\*)\*\*(?!\*)/g, "");
+  const parts = cleaned.split(/\*\*(.*?)\*\*/g);
+  if (parts.length === 1) return cleaned;
   return parts.map((part, i) =>
     i % 2 === 1 ? (
       <strong key={i} className="text-white font-semibold">
@@ -68,6 +96,7 @@ function inlineBold(text: string): React.ReactNode {
     )
   );
 }
+
 
 export default function DashboardShell() {
   const { state } = useIterisStore();

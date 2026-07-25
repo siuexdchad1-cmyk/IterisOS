@@ -149,11 +149,17 @@ function parseLyzrGoalOutput(
     });
   }
 
+  // Use the first substantive sentence/paragraph from the agent response as the summary
+  const firstMeaningfulLine = cleanedText
+    .split("\n")
+    .map((l) => l.replace(/^[#*>\-\s]+/, "").trim())
+    .find((l) => l.length > 20) || `Processed: "${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}"`;
+
   const summary: GoalSummary = {
     id: `summary-${Date.now().toString().slice(-4)}`,
     goalId,
-    whatWasDone: `Lyzr Goal Agent completed: ${prompt.length > 60 ? prompt.slice(0, 57) + "..." : prompt}`,
-    reasoning: cleanedText.slice(0, 300) || "Executed via Lyzr Studio Agent inference pipeline.",
+    whatWasDone: firstMeaningfulLine,
+    reasoning: cleanedText || "Executed via Lyzr Studio Agent inference pipeline.",
     generatedAt: new Date().toISOString(),
   };
 
