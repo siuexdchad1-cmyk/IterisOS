@@ -101,6 +101,7 @@ function inlineBold(text: string): React.ReactNode {
 export default function DashboardShell() {
   const { state } = useIterisStore();
   const goalSummaries = state?.goalSummaries ?? [];
+  const decisions     = state?.decisions     ?? [];
   const actionItems   = state?.actionItems   ?? [];
   const logs          = state?.logs          ?? [];
   const planSteps     = state?.planSteps     ?? [];
@@ -109,6 +110,7 @@ export default function DashboardShell() {
   // Only show the dashboard once the user has submitted at least one thing
   const hasAnyData =
     goalSummaries.length > 0 ||
+    decisions.length > 0 ||
     actionItems.length > 0 ||
     logs.length > 0 ||
     planSteps.length > 0 ||
@@ -191,6 +193,54 @@ export default function DashboardShell() {
                   </div>
                 </div>
               ))}
+            </GlassPanel>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Meeting Decisions & Insights — rendered when meeting decisions exist */}
+      <AnimatePresence>
+        {decisions.length > 0 && (
+          <motion.div
+            key="meeting-decisions"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <GlassPanel
+              title="Meeting Decisions & Extracted Answers"
+              icon={<Sparkles className="w-5 h-5 text-[#5EE0FF]" />}
+              badge={
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
+                  {decisions.length} Decision{decisions.length === 1 ? "" : "s"} Extracted
+                </span>
+              }
+              className="border-[#5EE0FF]/20"
+            >
+              <div className="space-y-3 font-sans text-xs">
+                {decisions.slice(0, 5).map((dec) => (
+                  <div
+                    key={dec.id}
+                    className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-[#5EE0FF] font-semibold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#3DDC84]" />
+                        Key Decision / Answer
+                      </span>
+                      {dec.confidence && (
+                        <span className="text-gray-400">
+                          {Math.round(dec.confidence * 100)}% Confidence
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-200 text-sm leading-relaxed font-sans">
+                      {dec.summary}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </GlassPanel>
           </motion.div>
         )}

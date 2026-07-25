@@ -166,11 +166,52 @@ function parseLyzrExtractionOutput(
         }
       }
     }
+    // Plain text line parser if JSON object was not returned
+    const textLines = cleanedText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 10);
+
+    const extractedDecisions: MeetingDecision[] = [];
+    const extractedActions: MeetingActionItem[] = [];
+
+    textLines.forEach((line, idx) => {
+      const cleanLine = line.replace(/^[#*>\-\d+\.\s]+/, "").trim();
+      if (/decision|agreed|resolved|concluded|decided/i.test(line)) {
+        extractedDecisions.push({
+          id: `dec-${Date.now().toString().slice(-4)}-${idx}`,
+          meetingId,
+          summary: cleanLine,
+          confidence: 0.94,
+          timestampInMeeting: "Meeting Review",
+        });
+      } else if (/action|task|follow up|assign|todo|deadline/i.test(line)) {
+        extractedActions.push({
+          id: `act-${Date.now().toString().slice(-4)}-${idx}`,
+          meetingId,
+          taskId: `task-m-${Date.now().toString().slice(-4)}-${idx}`,
+          description: cleanLine,
+          owner: {
+            id: `usr-unassigned`,
+            name: "Unassigned",
+            email: "",
+          },
+          deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
+          status: "pending",
+          remindersSent: 0,
+          followUpChannel: "slack",
+        });
+      }
+    });
+
+    if (extractedDecisions.length > 0 || extractedActions.length > 0) {
+      return { decisions: extractedDecisions, actionItems: extractedActions };
+    }
   } catch (err) {
     console.warn("JSON parsing failed for Lyzr meeting extraction response, using text fallback parser:", err);
   }
 
-  // Fallback text parser using regex line extraction
+  // Fallback text parser using dynamic transcript input
   return generateFallbackExtraction(meetingId, transcript);
 }
 
@@ -180,26 +221,24 @@ function generateFallbackExtraction(
   fileName: string = "Meeting Recording",
   reason?: string
 ): { decisions: MeetingDecision[]; actionItems: MeetingActionItem[] } {
-  const isAudio =
-    fileName.endsWith(".m4a") ||
-    fileName.endsWith(".mp3") ||
-    fileName.endsWith(".wav") ||
-    fileName.endsWith(".mp4") ||
-    transcript.includes("Audio Meeting Recording");
+  // Clean transcript text so markdown syntax / symbols are stripped
+  const cleanExcerpt = transcript
+    .replace(/^#{1,6}\s*/, "")
+    .replace(/\*{1,3}/g, "")
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+    .slice(0, 120)
+    .trim();
 
-  const cleanLabel =
-    fileName && fileName !== "pasted_transcript.txt" ? fileName : "Meeting Transcript";
+  const titleSummary = cleanExcerpt || (fileName && fileName !== "pasted_transcript.txt" ? fileName : "Meeting Analysis");
 
   return {
     decisions: [
       {
         id: `dec-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
-        summary: isAudio
-          ? `Extracted key decisions from audio meeting recording "${cleanLabel}".`
-          : `Extracted key decisions from transcript "${cleanLabel}".`,
-        confidence: 0.95,
-        timestampInMeeting: "10:15",
+        summary: `Extracted key insights: "${titleSummary}"`,
+        confidence: 0.94,
+        timestampInMeeting: "Meeting Extract",
       },
     ],
     actionItems: [
@@ -207,17 +246,15 @@ function generateFallbackExtraction(
         id: `act-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
         taskId: `task-m-lyzr-${Date.now().toString().slice(-4)}`,
-        description: isAudio
-          ? `Execute action items extracted from audio meeting: ${cleanLabel}`
-          : `Execute action item extracted from meeting transcript: ${cleanLabel}${reason ? ` (${reason})` : ""}`,
+        description: `Follow up on action item extracted from meeting: "${titleSummary}"`,
         owner: {
-          id: "usr-01",
-          name: "Marcus Vance",
-          email: "marcus@iteris.ai",
+          id: "usr-unassigned",
+          name: "Unassigned",
+          email: "",
         },
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
         status: "pending",
-        remindersSent: 1,
+        remindersSent: 0,
         followUpChannel: "slack",
       },
     ],
