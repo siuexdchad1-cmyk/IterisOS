@@ -105,6 +105,16 @@ function parseLyzrGoalOutput(
     }
   }
 
+  // ── Normalise all \n variants to real newlines ──────────────────
+  // Lyzr sometimes sends literal backslash-n inside the text payload.
+  // Convert them BEFORE any split() so every downstream operation works.
+  cleanedText = cleanedText
+    .replace(/\\r\\n/g, "\n")   // literal \r\n  → newline
+    .replace(/\\n/g,   "\n")   // literal \n    → newline
+    .replace(/\\t/g,   "  ")   // literal \t    → two spaces
+    .replace(/\r\n/g,  "\n")   // CRLF          → newline
+    .replace(/\r/g,    "\n");  // bare CR        → newline
+
   // Extract steps from bullet points or lines starting with Step/number
   const lines = cleanedText.split("\n").map((l) => l.trim()).filter(Boolean);
   const stepLines = lines.filter(
@@ -149,16 +159,30 @@ function parseLyzrGoalOutput(
     });
   }
 
-  // Use the first substantive sentence/paragraph from the agent response as the summary
-  const firstMeaningfulLine = cleanedText
+  // ── Build a clean plain-text summary from the first real sentence ──
+  // Strip markdown symbols so whatWasDone is readable prose, not raw syntax.
+  const plainLines = cleanedText
     .split("\n")
-    .map((l) => l.replace(/^[#*>\-\s]+/, "").trim())
-    .find((l) => l.length > 20) || `Processed: "${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}"`;
+    .map((l) =>
+      l
+        .replace(/^#{1,6}\s*/, "")   // headings
+        .replace(/\*{1,3}/g, "")     // bold/italic asterisks
+        .replace(/^[-*>]\s*/, "")    // bullets / blockquotes
+        .replace(/^\d+\.\s*/, "")    // numbered lists
+        .replace(/`/g, "")           // inline code
+        .replace(/\|/g, " ")
+        .trim()
+    )
+    .filter((l) => l.length > 25);
+
+  const whatWasDone =
+    plainLines[0] ??
+    `Processed: "${prompt.slice(0, 100)}${prompt.length > 100 ? "..." : ""}"`;
 
   const summary: GoalSummary = {
     id: `summary-${Date.now().toString().slice(-4)}`,
     goalId,
-    whatWasDone: firstMeaningfulLine,
+    whatWasDone,
     reasoning: cleanedText || "Executed via Lyzr Studio Agent inference pipeline.",
     generatedAt: new Date().toISOString(),
   };

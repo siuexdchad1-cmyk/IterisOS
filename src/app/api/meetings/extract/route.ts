@@ -106,6 +106,14 @@ function parseLyzrExtractionOutput(
       }
     }
 
+    // ── Normalise literal \n sequences to real newlines ──────────────
+    cleanedText = cleanedText
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g,   "\n")
+      .replace(/\\t/g,   "  ")
+      .replace(/\r\n/g,  "\n")
+      .replace(/\r/g,    "\n");
+
     // Attempt 2: Extract JSON object from text using regex
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {

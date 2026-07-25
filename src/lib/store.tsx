@@ -174,7 +174,8 @@ export function IterisProvider({ children }: { children: ReactNode }) {
       ...prev,
       agentStatus: "idle",
       goals: [newGoal, ...(prev.goals || [])],
-      goalSummaries: [summary, ...(prev.goalSummaries || [])],
+      // Keep only the 3 most recent summaries — old test results don't pile up
+      goalSummaries: [summary, ...(prev.goalSummaries || [])].slice(0, 3),
       planSteps: [...(steps || []), ...(prev.planSteps || [])],
       tasks: [newTask, ...(prev.tasks || [])],
     }));
