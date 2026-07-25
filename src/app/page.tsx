@@ -19,13 +19,6 @@ const fade = {
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0A0D14] text-gray-100 pb-20 relative selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF]">
-      {/* 8-second Ambient Glow Pulsing Background */}
-      <motion.div
-        animate={{ opacity: [0.15, 0.3, 0.15] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_50%_20%,rgba(94,224,255,0.25)_0%,transparent_60%)]"
-      />
-
       {/* 3D Motion Fullscreen Background Canvas */}
       <Background3DMotionCanvas />
 
