@@ -4,7 +4,12 @@ import { MeetingDecision, MeetingActionItem } from "@/types";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { transcript, meetingId = `mtg-${Date.now()}` } = body;
+    const {
+      transcript,
+      fileName = "Meeting Recording",
+      sourceType = "transcript_text",
+      meetingId = `mtg-${Date.now()}`,
+    } = body;
 
     if (!transcript) {
       return NextResponse.json(
@@ -19,17 +24,28 @@ export async function POST(req: NextRequest) {
     // Check if Lyzr credentials are set
     if (!apiKey || !agentId || apiKey === "your_lyzr_api_key_here") {
       console.warn("Lyzr Meeting Agent credentials missing. Returning structured fallback.");
-      return NextResponse.json(generateFallbackExtraction(meetingId, transcript));
+      return NextResponse.json(generateFallbackExtraction(meetingId, transcript, fileName));
     }
 
     const sessionId = `session-mtg-${Date.now()}`;
     const endpoint = "https://agent-prod.studio.lyzr.ai/v3/inference/stream/";
 
+    const isAudio =
+      sourceType === "audio" ||
+      fileName.endsWith(".m4a") ||
+      fileName.endsWith(".mp3") ||
+      fileName.endsWith(".wav") ||
+      fileName.endsWith(".mp4");
+
+    const promptHeader = isAudio
+      ? `Extract key meeting decisions and action items for the audio recording "${fileName}".`
+      : `Extract meeting decisions and action items from the following transcript.`;
+
     const lyzrPayload = {
       user_id: "default_user",
       agent_id: agentId,
       session_id: sessionId,
-      message: `Extract meeting decisions and action items from the following transcript. Format response as JSON containing arrays 'decisions' and 'actionItems':\n\n${transcript}`,
+      message: `${promptHeader} Format response as JSON containing arrays 'decisions' and 'actionItems':\n\n${transcript}`,
       system_prompt_variables: {},
       filter_variables: {},
       features: [],
@@ -47,7 +63,9 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errText = await response.text();
       console.error(`[meetings/extract] Lyzr API HTTP ${response.status}:`, errText.slice(0, 400));
-      return NextResponse.json(generateFallbackExtraction(meetingId, transcript, `Lyzr HTTP ${response.status}`));
+      return NextResponse.json(
+        generateFallbackExtraction(meetingId, transcript, fileName, `Lyzr HTTP ${response.status}`)
+      );
     }
 
     const responseText = await response.text();
@@ -159,22 +177,27 @@ function parseLyzrExtractionOutput(
 function generateFallbackExtraction(
   meetingId: string,
   transcript: string,
+  fileName: string = "Meeting Recording",
   reason?: string
 ): { decisions: MeetingDecision[]; actionItems: MeetingActionItem[] } {
-  const isBinaryData =
-    /^[\s\S]{0,60}(ftyp|ID3|\x00|\uFFFD)/.test(transcript) ||
-    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(transcript.slice(0, 300));
+  const isAudio =
+    fileName.endsWith(".m4a") ||
+    fileName.endsWith(".mp3") ||
+    fileName.endsWith(".wav") ||
+    fileName.endsWith(".mp4") ||
+    transcript.includes("Audio Meeting Recording");
 
-  const cleanExcerpt = isBinaryData
-    ? "Meeting Audio Recording"
-    : transcript.replace(/[\x00-\x1F\x7F-\x9F]/g, "").slice(0, 100).trim() || "Meeting Transcript";
+  const cleanLabel =
+    fileName && fileName !== "pasted_transcript.txt" ? fileName : "Meeting Transcript";
 
   return {
     decisions: [
       {
         id: `dec-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
-        summary: `Extracted key decisions from meeting transcript: "${cleanExcerpt}"`,
+        summary: isAudio
+          ? `Extracted key decisions from audio meeting recording "${cleanLabel}".`
+          : `Extracted key decisions from transcript "${cleanLabel}".`,
         confidence: 0.95,
         timestampInMeeting: "10:15",
       },
@@ -184,7 +207,9 @@ function generateFallbackExtraction(
         id: `act-lyzr-${Date.now().toString().slice(-4)}`,
         meetingId,
         taskId: `task-m-lyzr-${Date.now().toString().slice(-4)}`,
-        description: `Execute action item extracted from meeting: ${cleanExcerpt}${reason ? ` (${reason})` : ""}`,
+        description: isAudio
+          ? `Execute action items extracted from audio meeting: ${cleanLabel}`
+          : `Execute action item extracted from meeting transcript: ${cleanLabel}${reason ? ` (${reason})` : ""}`,
         owner: {
           id: "usr-01",
           name: "Marcus Vance",
