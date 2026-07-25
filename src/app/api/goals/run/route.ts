@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoalSummary, GoalPlanStep } from "@/types";
+import { analyzeAndTakeDecision } from "@/lib/decision-engine";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,13 +14,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const decision = await analyzeAndTakeDecision(prompt);
+
     const apiKey = process.env.LYZR_API_KEY;
     const agentId = process.env.LYZR_GOAL_AGENT_ID;
 
     // Check if Lyzr credentials are set
     if (!apiKey || !agentId || apiKey === "your_lyzr_api_key_here") {
       console.warn("Lyzr Goal Agent credentials missing. Returning structured fallback.");
-      return NextResponse.json(generateFallbackGoalResponse(goalId, prompt));
+      return NextResponse.json({
+        ...generateFallbackGoalResponse(goalId, prompt),
+        decision,
+      });
     }
 
     const sessionId = `session-goal-${Date.now()}`;

@@ -20,6 +20,7 @@ import TaskMatrix from "@/components/person_b/TaskMatrix";
 import SlideToApprove from "@/components/person_b/SlideToApprove";
 import LiveTerminal from "@/components/person_c/LiveTerminal";
 import StepInspector from "@/components/person_c/StepInspector";
+import DecisionMatrix from "@/components/person_b/DecisionMatrix";
 
 function renderMarkdown(text: string) {
   if (!text) return null;
@@ -179,6 +180,9 @@ export default function DashboardShell() {
               <LiveTerminal />
             </GlassPanel>
           )}
+
+          {/* Autonomous Strategic Decision Matrix */}
+          <DecisionMatrix />
 
           {/* Goal Execution Summary / Audit Trail */}
           {goalSummaries.length > 0 && (
