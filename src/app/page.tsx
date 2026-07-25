@@ -60,7 +60,7 @@ export default function Home() {
           animate="visible"
           className="pt-8 border-t border-white/10 text-center text-xs font-mono text-gray-600"
         >
-          Iteris OS · Domain 4 Hackathon
+          Iteris OS · Autonomous Execution Engine
         </motion.div>
       </div>
     </main>

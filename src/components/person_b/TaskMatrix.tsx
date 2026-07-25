@@ -68,7 +68,7 @@ export default function TaskMatrix() {
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>Pending Matrix ({pendingCount})</span>
+            <span>Pending ({pendingCount})</span>
           </button>
 
           <button
