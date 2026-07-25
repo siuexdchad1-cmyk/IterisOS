@@ -258,7 +258,7 @@ const PillNav = ({
         <div className="pill-nav-items desktop-only" ref={navItemsRef}>
           <ul className="pill-list" role="menubar">
             {items.map((item, i) => (
-              <li key={item.href || `item-${i}`} role="none">
+              <li key={item.id || `${item.label}-${item.href || ''}-${i}`} role="none">
                 {isRouterLink(item.href) ? (
                   <Link
                     role="menuitem"
@@ -325,7 +325,7 @@ const PillNav = ({
       <div className="mobile-menu-popover mobile-only" ref={mobileMenuRef} style={cssVars}>
         <ul className="mobile-menu-list">
           {items.map((item, i) => (
-            <li key={item.href || `mobile-item-${i}`}>
+            <li key={item.id ? `mobile-${item.id}` : `mobile-${item.label}-${item.href || ''}-${i}`}>
               {isRouterLink(item.href) ? (
                 <Link
                   href={item.href}

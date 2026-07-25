@@ -90,9 +90,9 @@ export default function Navbar() {
 
   const pillNavItems = [
     { label: "Dashboard", href: "/" },
-    { label: "Direct Goal", href: "#" },
-    { label: "Meeting Ingest", href: "#" },
-    { label: "Terminal", href: "#" },
+    { label: "Direct Goal", href: "#goal" },
+    { label: "Meeting Ingest", href: "#meeting" },
+    { label: "Terminal", href: "#terminal" },
   ];
 
   return (
