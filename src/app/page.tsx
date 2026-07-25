@@ -1,34 +1,41 @@
 'use client';
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
-import HeroGlobe from '@/components/HeroGlobe';
+import Navbar from '@/components/shared/Navbar';
+import HeroGlobe from '@/components/person_a/HeroGlobe';
 import TaskMatrix from '@/components/TaskMatrix';
 import LiveTerminal from '@/components/LiveTerminal';
-import { Cpu, ShieldCheck, Zap, Globe, Layers, GitBranch, Terminal, ArrowUpRight } from 'lucide-react';
+import { GitBranch } from 'lucide-react';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-300">
       
-      {/* 1. Glassmorphism Pinned Top Navbar */}
+      {/* 1. Shared Pinned Navigation Bar */}
       <Navbar />
 
-      {/* 2. Person A: Interactive 3D Globe & Dual-Input Hero */}
-      <HeroGlobe />
+      {/* 2. Person A: Front-End Lead Scope (3D WebGL Globe & Dual-Input Hero) */}
+      <HeroGlobe
+        onGoalExecutePlaceholder={(goal) => {
+          console.log('[Person A - Placeholder Hook] Goal Executed:', goal);
+        }}
+        onAudioIngestPlaceholder={(file) => {
+          console.log('[Person A - Placeholder Hook] Meeting Audio File Ingested:', file.name);
+        }}
+      />
 
       {/* 3. Main Dashboard Assembly Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16 w-full flex-grow">
         
-        {/* Desktop 3-Column Layout: TaskMatrix (col-span 2) + LiveTerminal (col-span 1) */}
+        {/* Layout: TaskMatrix (col-span 2) + LiveTerminal (col-span 1) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
-          {/* Left / Person B: Parallax Task Matrix & Slide-to-Approve Modal (col-span 2) */}
+          {/* Task Matrix (Person B Component) */}
           <div className="lg:col-span-2">
             <TaskMatrix />
           </div>
 
-          {/* Right / Person C: Live Typewriter Agent Stream & Step Inspector (col-span 1) */}
+          {/* Live Command Terminal (Person C Component) */}
           <div className="lg:col-span-1 sticky top-24">
             <LiveTerminal />
           </div>
@@ -77,7 +84,7 @@ export default function Home() {
           <div className="flex items-center space-x-3">
             <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
             <span className="font-extrabold tracking-wider text-lg text-white">ITERIS OS</span>
-            <span className="text-xs text-slate-500 font-mono">| Autonomous Task Orchestration</span>
+            <span className="text-xs text-slate-500 font-mono">| Person A Front-End Scope</span>
           </div>
 
           <div className="flex items-center space-x-6 text-xs text-slate-400 font-mono">
