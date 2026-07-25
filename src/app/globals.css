@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --canvas-bg: #0A0D14;
+  --ink-950: #0A0D14;
+  --ink-900: #121620;
+  --ink-800: #1E2330;
+  --ink-700: #2D3446;
+  
+  /* Agent Color Tokens */
+  --goal: #FFB84D;
+  --goal-glow: rgba(255, 184, 77, 0.25);
+  --meeting: #5EE0FF;
+  --meeting-glow: rgba(94, 224, 255, 0.25);
+
   --accent-cyan: #5EE0FF;
-  --accent-cyan-glow: rgba(94, 224, 255, 0.25);
   --status-success: #3DDC84;
   --status-warning: #FFB84D;
   --status-danger: #FF5C5C;
   
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Inter, sans-serif;
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, sans-serif;
-  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Monaco, Consolas, monospace;
 }
 
 body {
-  background-color: var(--canvas-bg);
+  background-color: var(--ink-950);
   color: #F3F4F6;
   font-family: var(--font-ui);
   min-height: 100vh;
@@ -29,6 +38,31 @@ body {
     linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* Agent Amber / Teal Split Utilities */
+.agent-goal-accent {
+  color: var(--goal);
+}
+
+.agent-goal-border {
+  border-color: rgba(255, 184, 77, 0.3);
+}
+
+.agent-goal-bg {
+  background-color: rgba(255, 184, 77, 0.1);
+}
+
+.agent-meeting-accent {
+  color: var(--meeting);
+}
+
+.agent-meeting-border {
+  border-color: rgba(94, 224, 255, 0.3);
+}
+
+.agent-meeting-bg {
+  background-color: rgba(94, 224, 255, 0.1);
 }
 
 /* Apple-style ultra-glass panel tokens with rounded curves */
@@ -54,14 +88,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.electric-glow {
-  box-shadow: 0 0 24px rgba(94, 224, 255, 0.35);
-}
-
-.text-cyan-glow {
-  text-shadow: 0 0 16px rgba(94, 224, 255, 0.6);
 }
 
 /* Custom Scrollbar for terminal & lists */
