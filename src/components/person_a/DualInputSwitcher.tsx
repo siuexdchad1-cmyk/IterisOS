@@ -12,6 +12,7 @@ import {
   Send,
   Sparkles,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { useIterisStore } from "@/lib/store";
 import { IngestSourceType } from "@/types";
@@ -19,49 +20,152 @@ import { IngestSourceType } from "@/types";
 type InputMode = "meeting" | "goal";
 
 export default function DualInputSwitcher() {
-  const { submitGoal, submitTranscript } = useIterisStore();
+  const {
+    submitGoal,
+    submitTranscript,
+    addMeetingResult,
+    addGoalResult,
+    appendLog,
+    setAgentStatus,
+  } = useIterisStore();
+
   const [mode, setMode] = useState<InputMode>("goal");
 
   // Direct Goal Form state
   const [goalPrompt, setGoalPrompt] = useState("");
   const [goalBudget, setGoalBudget] = useState("15000");
   const [goalCity, setGoalCity] = useState("New York");
+  const [isSubmittingGoal, setIsSubmittingGoal] = useState(false);
 
   // Ingest Meeting Form state
   const [meetingFileName, setMeetingFileName] = useState("");
   const [sourceType, setSourceType] = useState<IngestSourceType>("transcript_text");
   const [rawTranscript, setRawTranscript] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  const [isSubmittingMeeting, setIsSubmittingMeeting] = useState(false);
 
   // Success Feedback Toast
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
 
-  const handleGoalSubmit = (e: React.FormEvent) => {
+  const handleGoalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!goalPrompt.trim()) return;
+    const promptText = goalPrompt.trim();
+    if (!promptText || isSubmittingGoal) return;
 
-    submitGoal(
-      goalPrompt.trim(),
-      goalBudget ? parseFloat(goalBudget) : undefined,
-      goalCity
-    );
+    setIsSubmittingGoal(true);
+    setAgentStatus("executing");
 
-    setSubmittedMessage(`Goal dispatched: "${goalPrompt.slice(0, 40)}..."`);
-    setGoalPrompt("");
-    setTimeout(() => setSubmittedMessage(null), 4000);
+    // Terminal log entry on API start per brief
+    appendLog("info", `Calling Lyzr Goal Agent for instruction: "${promptText.slice(0, 45)}..."`);
+
+    try {
+      const res = await fetch("/api/goals/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`API returned HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // On response, update store state
+      addGoalResult(
+        data.summary,
+        data.steps,
+        promptText,
+        goalBudget ? parseFloat(goalBudget) : undefined,
+        goalCity
+      );
+
+      appendLog(
+        "success",
+        `Lyzr Goal Agent execution complete. ${data.steps?.length || 1} Reasoning Steps generated.`,
+        { goalId: data.summary?.goalId }
+      );
+
+      setSubmittedMessage(`Goal processed via Lyzr Agent: "${promptText.slice(0, 35)}..."`);
+      setGoalPrompt("");
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : "Network error";
+      console.warn("Lyzr Goal Agent call failed, applying fallback:", errMessage);
+
+      appendLog(
+        "error",
+        `Lyzr Goal Agent API call failed (${errMessage}). Applied standalone fallback.`,
+        { prompt: promptText }
+      );
+
+      // Graceful fallback without breaking UI
+      submitGoal(
+        promptText,
+        goalBudget ? parseFloat(goalBudget) : undefined,
+        goalCity
+      );
+      setSubmittedMessage(`Goal processed (Agent fallback): "${promptText.slice(0, 35)}..."`);
+    } finally {
+      setIsSubmittingGoal(false);
+      setTimeout(() => setSubmittedMessage(null), 4000);
+    }
   };
 
-  const handleMeetingSubmit = (e: React.FormEvent) => {
+  const handleMeetingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingMeeting) return;
+
     const fname = meetingFileName.trim() || "uploaded_transcript.vtt";
-    const text = rawTranscript.trim() || "Sample meeting transcript body...";
+    const text = rawTranscript.trim() || "Elena: We need the Tokyo node live by Friday...";
 
-    submitTranscript(fname, sourceType, text);
+    setIsSubmittingMeeting(true);
+    setAgentStatus("thinking");
 
-    setSubmittedMessage(`Transcript ingested: ${fname}`);
-    setMeetingFileName("");
-    setRawTranscript("");
-    setTimeout(() => setSubmittedMessage(null), 4000);
+    // Terminal log entry on API start per brief
+    appendLog("info", `Calling Lyzr Meeting Extraction Agent for file: ${fname}...`);
+
+    try {
+      const res = await fetch("/api/meetings/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript: text }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`API returned HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // On response, update store state with decisions and action items
+      addMeetingResult(data.decisions, data.actionItems, fname, text);
+
+      appendLog(
+        "success",
+        `Parsed transcript via Lyzr Agent. ${data.decisions?.length || 0} Decisions & ${data.actionItems?.length || 0} Action Items extracted.`,
+        { decisionsCount: data.decisions?.length, actionItemsCount: data.actionItems?.length }
+      );
+
+      setSubmittedMessage(`Transcript ingested via Lyzr Agent: ${fname}`);
+      setMeetingFileName("");
+      setRawTranscript("");
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : "Network error";
+      console.warn("Lyzr Meeting Agent call failed, applying fallback:", errMessage);
+
+      appendLog(
+        "error",
+        `Lyzr Meeting Agent API call failed (${errMessage}). Applied standalone fallback.`,
+        { fileName: fname }
+      );
+
+      // Graceful fallback without breaking UI
+      submitTranscript(fname, sourceType, text);
+      setSubmittedMessage(`Transcript ingested (Agent fallback): ${fname}`);
+    } finally {
+      setIsSubmittingMeeting(false);
+      setTimeout(() => setSubmittedMessage(null), 4000);
+    }
   };
 
   const handleFileDrop = (e: React.DragEvent) => {
@@ -78,7 +182,7 @@ export default function DualInputSwitcher() {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setRawTranscript(event.target.result.toString().slice(0, 300));
+          setRawTranscript(event.target.result.toString().slice(0, 400));
         }
       };
       reader.readAsText(file);
@@ -91,11 +195,11 @@ export default function DualInputSwitcher() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
         <div>
           <h3 className="font-display font-semibold text-white text-base flex items-center space-x-2">
-            <span>Agentic Orchestration Bar</span>
+            <span>Lyzr Agent Orchestration Bar</span>
             <Sparkles className="w-4 h-4 text-[#5EE0FF]" />
           </h3>
           <p className="text-xs text-gray-400 font-mono">
-            Switch input modes between Autonomous Goal Execution and Meeting Ingest Matrix
+            Directly invocation interface connected to deployed Lyzr Studio Agents
           </p>
         </div>
 
@@ -115,7 +219,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Zap className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">⚡ Direct Goal</span>
+            <span className="relative z-10">⚡ Direct Goal Agent</span>
           </button>
 
           <button
@@ -132,7 +236,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Mic className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">🎙️ Ingest Meeting</span>
+            <span className="relative z-10">🎙️ Meeting Agent</span>
           </button>
         </div>
       </div>
@@ -172,16 +276,26 @@ export default function DualInputSwitcher() {
                 type="text"
                 value={goalPrompt}
                 onChange={(e) => setGoalPrompt(e.target.value)}
-                placeholder="High-level instruction (e.g. Deconstruct bottleneck and re-allocate compute budget)..."
-                className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 font-mono focus:outline-none"
+                placeholder="Instruction for Lyzr Goal Agent (e.g. Deconstruct bottleneck and re-allocate compute budget)..."
+                disabled={isSubmittingGoal}
+                className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 font-mono focus:outline-none disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!goalPrompt.trim()}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 disabled:opacity-40 disabled:hover:bg-[#5EE0FF] transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)]"
+                disabled={!goalPrompt.trim() || isSubmittingGoal}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 disabled:opacity-40 disabled:hover:bg-[#5EE0FF] transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)] whitespace-nowrap"
               >
-                <span>Dispatch</span>
-                <Send className="w-3.5 h-3.5" />
+                {isSubmittingGoal ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Lyzr Running...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Dispatch Goal</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </>
+                )}
               </button>
             </div>
 
@@ -195,7 +309,8 @@ export default function DualInputSwitcher() {
                   value={goalBudget}
                   onChange={(e) => setGoalBudget(e.target.value)}
                   placeholder="15000"
-                  className="bg-transparent text-xs font-mono text-white focus:outline-none w-full"
+                  disabled={isSubmittingGoal}
+                  className="bg-transparent text-xs font-mono text-white focus:outline-none w-full disabled:opacity-50"
                 />
               </div>
 
@@ -205,7 +320,8 @@ export default function DualInputSwitcher() {
                 <select
                   value={goalCity}
                   onChange={(e) => setGoalCity(e.target.value)}
-                  className="bg-[#0A0D14] text-xs font-mono text-white focus:outline-none w-full cursor-pointer border-none"
+                  disabled={isSubmittingGoal}
+                  className="bg-[#0A0D14] text-xs font-mono text-white focus:outline-none w-full cursor-pointer border-none disabled:opacity-50"
                 >
                   <option value="New York">New York (US-East)</option>
                   <option value="London">London (EU-West)</option>
@@ -259,7 +375,8 @@ export default function DualInputSwitcher() {
                   <select
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value as IngestSourceType)}
-                    className="bg-[#0A0D14] text-[11px] text-[#5EE0FF] border border-white/10 rounded px-1.5 py-0.5 focus:outline-none"
+                    disabled={isSubmittingMeeting}
+                    className="bg-[#0A0D14] text-[11px] text-[#5EE0FF] border border-white/10 rounded px-1.5 py-0.5 focus:outline-none disabled:opacity-50"
                   >
                     <option value="transcript_text">Raw Text</option>
                     <option value="vtt">WebVTT (.vtt)</option>
@@ -273,18 +390,29 @@ export default function DualInputSwitcher() {
                 rows={2}
                 value={rawTranscript}
                 onChange={(e) => setRawTranscript(e.target.value)}
+                disabled={isSubmittingMeeting}
                 placeholder="Elena: We need the Tokyo node live by Friday. Marcus owns the GDPR compliance audit..."
-                className="w-full rounded-xl bg-black/60 border border-white/15 p-3 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-[#5EE0FF]"
+                className="w-full rounded-xl bg-black/60 border border-white/15 p-3 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-[#5EE0FF] disabled:opacity-50"
               />
             </div>
 
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)]"
+                disabled={isSubmittingMeeting}
+                className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)] disabled:opacity-50"
               >
-                <FileText className="w-4 h-4" />
-                <span>Parse Transcript Matrix</span>
+                {isSubmittingMeeting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Parsing via Lyzr...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4" />
+                    <span>Extract Matrix via Lyzr</span>
+                  </>
+                )}
               </button>
             </div>
           </motion.form>

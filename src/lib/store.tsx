@@ -6,6 +6,7 @@ import {
   AgentStatus,
   GoalRequest,
   GoalPlanStep,
+  GoalSummary,
   MeetingIngest,
   MeetingDecision,
   MeetingActionItem,
@@ -25,6 +26,19 @@ interface IterisStoreContextType {
     sourceType: IngestSourceType,
     rawExcerpt: string
   ) => void;
+  addMeetingResult: (
+    decisions: MeetingDecision[],
+    actionItems: MeetingActionItem[],
+    fileName?: string,
+    rawExcerpt?: string
+  ) => void;
+  addGoalResult: (
+    summary: GoalSummary,
+    steps?: GoalPlanStep[],
+    prompt?: string,
+    budget?: number,
+    city?: string
+  ) => void;
   appendLog: (
     level: LogLevel,
     message: string,
@@ -40,6 +54,8 @@ const defaultValue: IterisStoreContextType = {
   state: initialMockState,
   submitGoal: () => {},
   submitTranscript: () => {},
+  addMeetingResult: () => {},
+  addGoalResult: () => {},
   appendLog: () => {},
   resolveApproval: () => {},
   setAgentStatus: () => {},
@@ -73,6 +89,94 @@ export function IterisProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({
       ...prev,
       logs: [newLog, ...(prev.logs || [])],
+    }));
+  };
+
+  const addMeetingResult = (
+    decisions: MeetingDecision[],
+    actionItems: MeetingActionItem[],
+    fileName?: string,
+    rawExcerpt?: string
+  ) => {
+    const meetingId = decisions[0]?.meetingId || `mtg-${Date.now().toString().slice(-4)}`;
+    const now = new Date().toISOString();
+
+    const newMeeting: MeetingIngest = {
+      id: meetingId,
+      fileName: fileName || "lyzr_transcript_ingest.vtt",
+      sourceType: "vtt",
+      uploadedAt: now,
+      status: "parsed",
+      durationSeconds: 1800,
+      participantCount: 4,
+      rawTranscriptExcerpt: rawExcerpt || "Ingested via Lyzr Meeting Extraction Agent...",
+    };
+
+    const newTasks: AgentTask[] = actionItems.map((item) => ({
+      id: item.taskId || `task-m-${Date.now().toString().slice(-4)}`,
+      source: "meeting",
+      title: item.description.length > 50 ? `${item.description.slice(0, 47)}...` : item.description,
+      description: item.description,
+      status: item.status || "pending",
+      priority: "high",
+      owner: item.owner || { id: "usr-01", name: "Marcus Vance", email: "marcus@iteris.ai" },
+      linkedMeetingId: meetingId,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    setState((prev) => ({
+      ...prev,
+      agentStatus: "idle",
+      meetings: [newMeeting, ...(prev.meetings || [])],
+      decisions: [...decisions, ...(prev.decisions || [])],
+      actionItems: [...actionItems, ...(prev.actionItems || [])],
+      tasks: [...newTasks, ...(prev.tasks || [])],
+    }));
+  };
+
+  const addGoalResult = (
+    summary: GoalSummary,
+    steps?: GoalPlanStep[],
+    prompt?: string,
+    budget?: number,
+    city?: string
+  ) => {
+    const goalId = summary.goalId || `goal-${Date.now().toString().slice(-4)}`;
+    const taskId = `task-g-${Date.now().toString().slice(-4)}`;
+    const now = new Date().toISOString();
+
+    const newGoal: GoalRequest = {
+      id: goalId,
+      prompt: prompt || summary.whatWasDone,
+      submittedAt: now,
+      status: "completed",
+      budget,
+      currency: "USD",
+      city: city || "New York",
+    };
+
+    const newTask: AgentTask = {
+      id: taskId,
+      source: "goal",
+      title: (prompt || summary.whatWasDone).slice(0, 47) + "...",
+      description: prompt || summary.whatWasDone,
+      status: "completed",
+      priority: budget && budget > 10000 ? "urgent" : "high",
+      owner: { id: "usr-03", name: "Elena Rostova", email: "elena@iteris.ai" },
+      city: city || "New York",
+      linkedGoalId: goalId,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setState((prev) => ({
+      ...prev,
+      agentStatus: "idle",
+      goals: [newGoal, ...(prev.goals || [])],
+      goalSummaries: [summary, ...(prev.goalSummaries || [])],
+      planSteps: [...(steps || []), ...(prev.planSteps || [])],
+      tasks: [newTask, ...(prev.tasks || [])],
     }));
   };
 
@@ -294,6 +398,8 @@ export function IterisProvider({ children }: { children: ReactNode }) {
         state,
         submitGoal,
         submitTranscript,
+        addMeetingResult,
+        addGoalResult,
         appendLog,
         resolveApproval,
         setAgentStatus,
