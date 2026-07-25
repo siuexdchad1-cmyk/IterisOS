@@ -237,7 +237,7 @@ function generateFallbackGoalResponse(
         id: `step-${goalId}-2`,
         goalId,
         order: 2,
-        description: `Finalize execution report & dispatch summary`,
+        description: `Finalize execution report & notify team`,
         status: "completed",
         retryCount: 0,
         maxRetries: 3,

@@ -299,7 +299,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Zap className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">⚡ Goal Mode</span>
+            <span className="relative z-10">⚡ Goal Agent</span>
           </button>
 
           <button
@@ -316,7 +316,7 @@ export default function DualInputSwitcher() {
               />
             )}
             <Mic className="w-4 h-4 text-[#5EE0FF] relative z-10" />
-            <span className="relative z-10">🎙️ Audio Ingest</span>
+            <span className="relative z-10">🎙️ Meeting Agent</span>
           </button>
         </div>
       </div>
@@ -373,7 +373,7 @@ export default function DualInputSwitcher() {
                   </>
                 ) : (
                   <>
-                    <span>Run Goal ↗</span>
+                    <span>Run Task ↗</span>
                   </>
                 )}
               </button>
