@@ -261,8 +261,11 @@ export default function DashboardShell() {
 
         </div>
 
-        {/* Right Column (1 Col): Secondary Sidebar (Approvals, Action Items, Step Inspector) */}
-        <div className="lg:col-span-1 space-y-6 opacity-95">
+        {/* Right Column (1 Col): Secondary Sidebar (Approvals, Action Items, Validation, Inspector) */}
+        <aside className="lg:col-span-1 space-y-5 lg:border-l lg:border-white/10 lg:pl-6">
+          <div className="text-[11px] font-mono text-gray-500 uppercase tracking-wider font-semibold mb-2">
+            Secondary Panel & Sidebar Controls
+          </div>
 
           {/* Human Authorizations */}
           {approvals.filter((a) => a.status === "pending").length > 0 && (
@@ -310,7 +313,7 @@ export default function DashboardShell() {
             </GlassPanel>
           )}
 
-        </div>
+        </aside>
 
       </div>
 
