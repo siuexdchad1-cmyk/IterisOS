@@ -67,7 +67,6 @@ export default function DualInputSwitcher() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: promptText }),
-        signal: AbortSignal.timeout(30_000),
       });
 
       if (!res.ok) {
@@ -125,7 +124,6 @@ export default function DualInputSwitcher() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: text }),
-        signal: AbortSignal.timeout(30_000),
       });
 
       if (!res.ok) {

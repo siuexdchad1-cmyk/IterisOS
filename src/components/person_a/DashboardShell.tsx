@@ -20,6 +20,70 @@ import SlideToApprove from "@/components/person_b/SlideToApprove";
 import LiveTerminal from "@/components/person_c/LiveTerminal";
 import StepInspector from "@/components/person_c/StepInspector";
 
+// Lightweight markdown → JSX renderer (handles headings, bold, bullets, newlines)
+function renderMarkdown(text: string) {
+  if (!text) return null;
+
+  // Normalise literal \n sequences that come back from JSON strings
+  const normalized = text.replace(/\\n/g, "\n").replace(/\\t/g, "  ");
+
+  return normalized.split("\n").map((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <div key={i} className="h-2" />;
+
+    // Heading: # or ## or ###
+    if (/^#{1,3}\s/.test(trimmed)) {
+      const content = trimmed.replace(/^#{1,3}\s/, "");
+      return (
+        <p key={i} className="text-[#5EE0FF] font-semibold text-[11px] mt-2 mb-0.5">
+          {inlineBold(content)}
+        </p>
+      );
+    }
+
+    // Bullet: - or * or |
+    if (/^[-*|]/.test(trimmed)) {
+      return (
+        <div key={i} className="flex items-start gap-1.5 pl-1">
+          <span className="text-[#5EE0FF] mt-0.5 flex-shrink-0">›</span>
+          <span>{inlineBold(trimmed.replace(/^[-*|]\s*/, ""))}</span>
+        </div>
+      );
+    }
+
+    // Numbered list
+    if (/^\d+[.)]\s/.test(trimmed)) {
+      const num = trimmed.match(/^(\d+)/)?.[1];
+      const content = trimmed.replace(/^\d+[.)]\s*/, "");
+      return (
+        <div key={i} className="flex items-start gap-1.5 pl-1">
+          <span className="text-[#5EE0FF] flex-shrink-0 font-semibold">{num}.</span>
+          <span>{inlineBold(content)}</span>
+        </div>
+      );
+    }
+
+    return <p key={i}>{inlineBold(trimmed)}</p>;
+  });
+}
+
+// Render **bold** inline spans
+function inlineBold(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} className="text-white font-semibold">
+        {part}
+      </strong>
+    ) : (
+      part
+    )
+  );
+}
+
+
+
 export default function DashboardShell() {
   const { state } = useIterisStore();
   const goalSummaries = state?.goalSummaries || [];
@@ -45,8 +109,8 @@ export default function DashboardShell() {
             }
             className="border-[#3DDC84]/30 bg-gradient-to-br from-white/5 to-[#3DDC84]/5"
           >
-            {goalSummaries.map((summary) => (
-              <div key={summary.id} className="space-y-4 font-mono text-xs">
+            {goalSummaries.map((summary, i) => (
+              <div key={summary.id} className={`space-y-4 font-mono text-xs ${i > 0 ? "pt-4 border-t border-white/10" : ""}`}>
                 {/* Section 1: What was done */}
                 <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
                   <div className="flex items-center justify-between text-[#3DDC84] font-semibold text-xs mb-1">
@@ -65,13 +129,13 @@ export default function DashboardShell() {
 
                 {/* Section 2: Agent Reasoning & Failure Log if any */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                  <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 overflow-auto max-h-60">
                     <span className="text-[#5EE0FF] font-semibold text-[11px] block">
                       Transparent Reasoning Log
                     </span>
-                    <p className="text-gray-300 text-xs leading-normal">
-                      {summary.reasoning}
-                    </p>
+                    <div className="text-gray-300 text-xs leading-relaxed space-y-1 font-sans">
+                      {renderMarkdown(summary.reasoning)}
+                    </div>
                   </div>
 
                   {summary.whatFailed ? (
@@ -80,7 +144,7 @@ export default function DashboardShell() {
                         <AlertCircle className="w-3.5 h-3.5" />
                         <span>Execution Exceptions</span>
                       </span>
-                      <p className="text-gray-300 text-xs">
+                      <p className="text-gray-300 text-xs font-sans">
                         {summary.whatFailed}
                       </p>
                     </div>
@@ -90,7 +154,7 @@ export default function DashboardShell() {
                         <HelpCircle className="w-3.5 h-3.5 text-[#3DDC84]" />
                         <span>System Verification</span>
                       </span>
-                      <p className="text-gray-400 text-xs">
+                      <p className="text-gray-400 text-xs font-sans">
                         Zero unhandled execution failures. All sub-task assertions passed.
                       </p>
                     </div>
@@ -98,6 +162,7 @@ export default function DashboardShell() {
                 </div>
               </div>
             ))}
+
           </GlassPanel>
         </motion.div>
       )}
