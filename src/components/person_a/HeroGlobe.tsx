@@ -1,376 +1,164 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Globe as GlobeIcon, Sparkles } from 'lucide-react';
-import DualInputSwitcher from './DualInputSwitcher';
-import { GlobePin } from '@/types';
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { Globe, MapPin, CheckCircle2, AlertCircle, Clock, X, Zap } from "lucide-react";
+import { useIterisStore } from "@/lib/store";
+import { HotspotTask } from "@/types";
 
-const INITIAL_PINS: GlobePin[] = [
-  {
-    id: 'london-1',
-    city: 'London',
-    country: 'United Kingdom',
-    lat: 51.5074,
-    lng: -0.1278,
-    xPercent: 48,
-    yPercent: 32,
-    activeAgent: 'Lyzr Booking Core',
-    taskSummary: 'Checking hotel APIs ($350 savings found)',
-    metric: '99.4% Match',
-    status: 'Active'
-  },
-  {
-    id: 'tokyo-2',
-    city: 'Tokyo',
-    country: 'Japan',
-    lat: 35.6762,
-    lng: 139.6503,
-    xPercent: 82,
-    yPercent: 41,
-    activeAgent: 'Logistics Orchestrator',
-    taskSummary: 'Re-routing air freight to avoid typhoons',
-    metric: '-4.2 hrs delay',
-    status: 'Processing'
-  },
-  {
-    id: 'nyc-3',
-    city: 'New York',
-    country: 'United States',
-    lat: 40.7128,
-    lng: -74.0060,
-    xPercent: 28,
-    yPercent: 38,
-    activeAgent: 'FinOps Audit Agent',
-    taskSummary: 'Reconciling AWS reserved instances',
-    metric: '$12.4k Saved',
-    status: 'Active'
-  },
-  {
-    id: 'singapore-4',
-    city: 'Singapore',
-    country: 'Singapore',
-    lat: 1.3521,
-    lng: 103.8198,
-    xPercent: 76,
-    yPercent: 58,
-    activeAgent: 'Data Privacy Guard',
-    taskSummary: 'Scanning cross-border compliance payload',
-    metric: '100% Compliant',
-    status: 'Synced'
-  },
-  {
-    id: 'dubai-5',
-    city: 'Dubai',
-    country: 'UAE',
-    lat: 25.2048,
-    lng: 55.2708,
-    xPercent: 61,
-    yPercent: 46,
-    activeAgent: 'Vendor Negotiator',
-    taskSummary: 'Automating enterprise contract renewals',
-    metric: 'Pending Counter',
-    status: 'Processing'
-  },
-  {
-    id: 'sf-6',
-    city: 'San Francisco',
-    country: 'United States',
-    lat: 37.7749,
-    lng: -122.4194,
-    xPercent: 16,
-    yPercent: 40,
-    activeAgent: 'DevOps Orchestrator',
-    taskSummary: 'Triggering multi-region failover dry-run',
-    metric: '0 Loss',
-    status: 'Active'
-  }
-];
+// Dynamic import for R3F Canvas to prevent SSR hydration errors
+const GlobeCanvas = dynamic(() => import("./GlobeCanvas"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="flex flex-col items-center space-y-3">
+        <div className="w-12 h-12 rounded-full border-2 border-[#5EE0FF]/30 border-t-[#5EE0FF] animate-spin" />
+        <span className="font-mono text-xs text-gray-400">Initializing 3D Telemetry Canvas...</span>
+      </div>
+    </div>
+  ),
+});
 
-export interface HeroGlobeProps {
-  onGoalExecutePlaceholder?: (goal: string) => void;
-  onAudioIngestPlaceholder?: (file: File) => void;
-}
+export default function HeroGlobe() {
+  const { state } = useIterisStore();
+  const hotspots = state?.hotspots || [];
 
-export const HeroGlobe: React.FC<HeroGlobeProps> = ({
-  onGoalExecutePlaceholder,
-  onAudioIngestPlaceholder,
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [selectedHotspot, setSelectedHotspot] = useState<HotspotTask | null>(
+    hotspots[0] || null
+  );
 
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [selectedPin, setSelectedPin] = useState<GlobePin | null>(INITIAL_PINS[0]);
-  const [hoveredPin, setHoveredPin] = useState<GlobePin | null>(null);
-
-  // Mouse move radial halo tracker
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
-      }
-    };
-
-    const el = containerRef.current;
-    if (el) el.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      if (el) el.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  // WebGL / Canvas 3D Rotating Sphere
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationId: number;
-    let rotationAngle = 0;
-
-    const render = () => {
-      const w = canvas.width;
-      const h = canvas.height;
-      const cx = w / 2;
-      const cy = h / 2;
-      const radius = Math.min(w, h) * 0.42;
-
-      ctx.clearRect(0, 0, w, h);
-
-      // Atmosphere outer radial gradient
-      const outerGlow = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.35);
-      outerGlow.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
-      outerGlow.addColorStop(0.5, 'rgba(6, 182, 212, 0.12)');
-      outerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = outerGlow;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 1.35, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Sphere base
-      const sphereGrad = ctx.createRadialGradient(
-        cx - radius * 0.3,
-        cy - radius * 0.3,
-        radius * 0.1,
-        cx,
-        cy,
-        radius
-      );
-      sphereGrad.addColorStop(0, '#0f2b23');
-      sphereGrad.addColorStop(0.6, '#061310');
-      sphereGrad.addColorStop(1, '#020706');
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fillStyle = sphereGrad;
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.clip();
-
-      // Latitudes
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
-      ctx.lineWidth = 1;
-      for (let i = -6; i <= 6; i++) {
-        const y = cy + (i * radius) / 7;
-        const rScale = Math.sqrt(Math.max(0, radius * radius - (y - cy) * (y - cy)));
-        ctx.beginPath();
-        ctx.ellipse(cx, y, rScale, rScale * 0.25, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // Longitudes
-      rotationAngle += 0.003;
-      const lonCount = 14;
-      for (let i = 0; i < lonCount; i++) {
-        const angle = rotationAngle + (i * Math.PI) / (lonCount / 2);
-        const cosAngle = Math.cos(angle);
-        const sinAngle = Math.sin(angle);
-
-        ctx.strokeStyle = cosAngle > 0 ? 'rgba(16, 185, 129, 0.22)' : 'rgba(16, 185, 129, 0.05)';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, radius * Math.abs(cosAngle), radius, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Landmass dots along arcs
-        if (cosAngle > -0.2) {
-          ctx.fillStyle = cosAngle > 0.3 ? 'rgba(52, 211, 153, 0.7)' : 'rgba(16, 185, 129, 0.3)';
-          for (let j = 1; j <= 5; j++) {
-            const py = cy + (j - 3) * (radius * 0.25);
-            const px = cx + sinAngle * Math.sqrt(Math.max(0, radius * radius - (py - cy) * (py - cy))) * 0.9;
-            ctx.beginPath();
-            ctx.arc(px, py, 1.8, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      ctx.restore();
-
-      animationId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
+  const getStatusBadge = (status: HotspotTask["status"]) => {
+    switch (status) {
+      case "completed":
+        return (
+          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#3DDC84]/15 text-[#3DDC84] border border-[#3DDC84]/30">
+            <CheckCircle2 className="w-3 h-3" />
+            <span>Completed</span>
+          </span>
+        );
+      case "awaiting_approval":
+        return (
+          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#FFB84D]/15 text-[#FFB84D] border border-[#FFB84D]/30">
+            <AlertCircle className="w-3 h-3" />
+            <span>Awaiting Approval</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
+            <Clock className="w-3 h-3 animate-spin" />
+            <span>In Execution</span>
+          </span>
+        );
+    }
+  };
 
   return (
-    <section
-      id="hero"
-      ref={containerRef}
-      className="relative min-h-[92vh] bg-black overflow-hidden flex flex-col justify-between pt-12 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10"
-    >
-      {/* Radial Cursor Light Halo */}
-      <div
-        className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-0"
-        style={{
-          background: `radial-gradient(700px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(16, 185, 129, 0.14), rgba(6, 182, 212, 0.05) 50%, transparent 80%)`,
-        }}
-      />
+    <div className="relative w-full rounded-2xl glass-panel p-4 md:p-6 overflow-hidden border border-white/10 my-4">
+      {/* Background ambient lighting */}
+      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[#5EE0FF]/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-[#3DDC84]/5 blur-3xl pointer-events-none" />
 
-      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none z-0" />
+      {/* Header Info Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4 mb-2">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#5EE0FF]">
+            <Globe className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-display font-semibold text-lg text-white tracking-tight flex items-center space-x-2">
+              <span>Global Agentic Mesh</span>
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5EE0FF] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5EE0FF]" />
+              </span>
+            </h2>
+            <p className="text-xs text-gray-400 font-mono">
+              Live Edge Execution Hotspots & Regional Task Routing
+            </p>
+          </div>
+        </div>
 
-      {/* Hero Header */}
-      <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center space-x-2 glass-pill px-4 py-1.5 rounded-full text-xs font-mono text-emerald-400 border border-emerald-500/30"
-        >
-          <Sparkles className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
-          <span>PERSON A • FRONT-END ORCHESTRATION ENGINE</span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-none"
-        >
-          ITERIS OS —{' '}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-glow-emerald">
-            Autonomous Task Orchestration
-          </span>{' '}
-          Across Your Global Workflows.
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-3xl mx-auto text-base sm:text-lg text-slate-400 font-light"
-        >
-          Ingest raw meeting transcripts or dispatch direct goals. Iteris OS coordinates multi-agent sub-tasks, detects schedule conflicts, and safely executes across global enterprise endpoints.
-        </motion.p>
-
-        {/* Dual Input Switcher Component */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="pt-4"
-        >
-          <DualInputSwitcher
-            onGoalSubmit={onGoalExecutePlaceholder}
-            onFileUpload={onAudioIngestPlaceholder}
-          />
-        </motion.div>
-      </div>
-
-      {/* 3D WebGL Globe & Glowing Hotspots */}
-      <div className="relative w-full max-w-5xl mx-auto mt-12 mb-4 flex flex-col items-center justify-center">
-        <div className="relative w-[340px] sm:w-[480px] h-[340px] sm:h-[420px] flex items-center justify-center">
-          <canvas
-            ref={canvasRef}
-            width={500}
-            height={500}
-            className="w-full h-full max-w-full max-h-full object-contain pointer-events-none"
-          />
-
-          {/* Hotspot Pins Overlay */}
-          {INITIAL_PINS.map((pin) => {
-            const isSelected = selectedPin?.id === pin.id;
-            const isHovered = hoveredPin?.id === pin.id;
-
+        {/* Hotspot Quick Filters */}
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0">
+          {hotspots.map((hs) => {
+            const isSelected = selectedHotspot?.taskId === hs.taskId;
             return (
-              <div
-                key={pin.id}
-                style={{ top: `${pin.yPercent}%`, left: `${pin.xPercent}%` }}
-                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                onMouseEnter={() => setHoveredPin(pin)}
-                onMouseLeave={() => setHoveredPin(null)}
-                onClick={() => setSelectedPin(pin)}
+              <button
+                key={hs.taskId}
+                onClick={() => setSelectedHotspot(hs)}
+                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all flex items-center space-x-1.5 whitespace-nowrap ${
+                  isSelected
+                    ? "bg-[#5EE0FF]/20 text-[#5EE0FF] border border-[#5EE0FF]/40 shadow-[0_0_10px_rgba(94,224,255,0.2)]"
+                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:bg-white/10"
+                }`}
               >
-                <div className="relative flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full bg-emerald-400/40 animate-ping absolute"></div>
-                  <div
-                    className={`w-3.5 h-3.5 rounded-full border border-white transition-transform duration-300 ${
-                      isSelected || isHovered
-                        ? 'bg-emerald-400 scale-125 shadow-[0_0_20px_rgba(16,185,129,1)]'
-                        : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)]'
-                    }`}
-                  />
-                  <span className="ml-2 px-1.5 py-0.5 rounded bg-black/80 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 hidden sm:inline-block">
-                    {pin.city}
-                  </span>
-                </div>
-
-                {/* Floating Glass Card Popup */}
-                {(isHovered || isSelected) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-64 glass-panel p-3 rounded-xl border border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.25)] z-30 pointer-events-auto"
-                  >
-                    <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-2">
-                      <div className="flex items-center space-x-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-xs font-bold text-white">{pin.city}, {pin.country}</span>
-                      </div>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
-                        {pin.status}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5 text-left">
-                      <div className="text-[11px] font-semibold text-emerald-300">
-                        {pin.activeAgent}
-                      </div>
-                      <p className="text-[10px] text-slate-300 leading-tight">
-                        {pin.taskSummary}
-                      </p>
-                      <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                        <span>Metric:</span>
-                        <span className="text-emerald-400 font-bold">{pin.metric}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
+                <MapPin className="w-3 h-3" />
+                <span>{hs.city}</span>
+              </button>
             );
           })}
         </div>
-
-        {selectedPin && (
-          <div className="mt-4 glass-panel px-4 py-2 rounded-full border border-white/10 flex items-center space-x-3 text-xs text-slate-300">
-            <GlobeIcon className="w-4 h-4 text-emerald-400" />
-            <span>
-              Active Node: <strong className="text-white">{selectedPin.city}</strong> — {selectedPin.activeAgent} ({selectedPin.taskSummary})
-            </span>
-          </div>
-        )}
       </div>
-    </section>
-  );
-};
 
-export default HeroGlobe;
+      {/* Globe & Interactive Popup Container */}
+      <div className="relative h-[320px] md:h-[380px] w-full flex items-center justify-center">
+        {/* 3D R3F Canvas */}
+        <GlobeCanvas
+          hotspots={hotspots}
+          activeHotspot={selectedHotspot}
+          onSelectHotspot={(hs) => setSelectedHotspot(hs)}
+        />
+
+        {/* Overlay Popup Card (Framer Motion AnimatePresence) */}
+        <AnimatePresence>
+          {selectedHotspot && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 glass-panel p-4 rounded-xl border border-white/20 shadow-2xl backdrop-blur-2xl z-20"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="p-1.5 rounded-lg bg-[#5EE0FF]/15 text-[#5EE0FF]">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-display font-semibold text-sm text-white">
+                      {selectedHotspot.city} Node
+                    </h4>
+                    <span className="font-mono text-[10px] text-gray-400">
+                      Task ID: {selectedHotspot.taskId}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedHotspot(null)}
+                  className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-white/10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                <p className="text-xs text-gray-200 font-medium leading-snug">
+                  {selectedHotspot.label}
+                </p>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] font-mono text-gray-400">
+                    Execution State:
+                  </span>
+                  {getStatusBadge(selectedHotspot.status)}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

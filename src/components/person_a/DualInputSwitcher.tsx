@@ -1,243 +1,295 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, Upload, Play, CheckCircle2, FileAudio } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Mic,
+  Zap,
+  Upload,
+  FileText,
+  DollarSign,
+  MapPin,
+  Send,
+  Sparkles,
+  CheckCircle,
+} from "lucide-react";
+import { useIterisStore } from "@/lib/store";
+import { IngestSourceType } from "@/types";
 
-export interface DualInputSwitcherProps {
-  onGoalSubmit?: (goal: string) => void;
-  onFileUpload?: (file: File) => void;
-  isLoading?: boolean;
-}
+type InputMode = "meeting" | "goal";
 
-export const DualInputSwitcher: React.FC<DualInputSwitcherProps> = ({
-  onGoalSubmit,
-  onFileUpload,
-  isLoading = false,
-}) => {
-  const [inputMode, setInputMode] = useState<'goal' | 'meeting'>('goal');
-  const [goalText, setGoalText] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [successMessage, setSuccessMessage] = useState('');
+export default function DualInputSwitcher() {
+  const { submitGoal, submitTranscript } = useIterisStore();
+  const [mode, setMode] = useState<InputMode>("goal");
 
-  const handleRunGoal = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!goalText.trim()) return;
+  // Direct Goal Form state
+  const [goalPrompt, setGoalPrompt] = useState("");
+  const [goalBudget, setGoalBudget] = useState("15000");
+  const [goalCity, setGoalCity] = useState("New York");
 
-    if (onGoalSubmit) {
-      onGoalSubmit(goalText);
-    }
+  // Ingest Meeting Form state
+  const [meetingFileName, setMeetingFileName] = useState("");
+  const [sourceType, setSourceType] = useState<IngestSourceType>("transcript_text");
+  const [rawTranscript, setRawTranscript] = useState("");
+  const [dragActive, setDragActive] = useState(false);
 
-    setSuccessMessage(`Goal dispatched: "${goalText}"`);
-    setGoalText('');
-    setTimeout(() => setSuccessMessage(''), 4000);
-  };
+  // Success Feedback Toast
+  const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
 
-  const processFile = (file: File) => {
-    setUploadedFile(file);
-    setUploadProgress(0);
-    if (onFileUpload) {
-      onFileUpload(file);
-    }
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 25;
-      });
-    }, 180);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
+  const handleGoalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsDragging(false);
+    if (!goalPrompt.trim()) return;
+
+    submitGoal(
+      goalPrompt.trim(),
+      goalBudget ? parseFloat(goalBudget) : undefined,
+      goalCity
+    );
+
+    setSubmittedMessage(`Goal dispatched: "${goalPrompt.slice(0, 40)}..."`);
+    setGoalPrompt("");
+    setTimeout(() => setSubmittedMessage(null), 4000);
+  };
+
+  const handleMeetingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const fname = meetingFileName.trim() || "uploaded_transcript.vtt";
+    const text = rawTranscript.trim() || "Sample meeting transcript body...";
+
+    submitTranscript(fname, sourceType, text);
+
+    setSubmittedMessage(`Transcript ingested: ${fname}`);
+    setMeetingFileName("");
+    setRawTranscript("");
+    setTimeout(() => setSubmittedMessage(null), 4000);
+  };
+
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      setMeetingFileName(file.name);
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext === "vtt") setSourceType("vtt");
+      else if (ext === "mp3" || ext === "wav") setSourceType("audio");
+      else setSourceType("transcript_text");
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setRawTranscript(event.target.result.toString().slice(0, 300));
+        }
+      };
+      reader.readAsText(file);
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
-      {/* Mode Switcher Pill */}
-      <div className="flex justify-center">
-        <div className="glass-pill p-1.5 rounded-full inline-flex items-center space-x-2 border border-white/10">
+    <div className="w-full glass-panel p-5 md:p-6 rounded-2xl border border-white/10 my-4 relative overflow-hidden">
+      {/* Top Controls: Animated Mode Switcher Pill */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
+        <div>
+          <h3 className="font-display font-semibold text-white text-base flex items-center space-x-2">
+            <span>Agentic Orchestration Bar</span>
+            <Sparkles className="w-4 h-4 text-[#5EE0FF]" />
+          </h3>
+          <p className="text-xs text-gray-400 font-mono">
+            Switch input modes between Autonomous Goal Execution and Meeting Ingest Matrix
+          </p>
+        </div>
+
+        {/* Pill Selector */}
+        <div className="relative flex p-1 rounded-xl bg-black/40 border border-white/10 w-full sm:w-auto">
           <button
-            onClick={() => setInputMode('goal')}
-            className={`flex items-center space-x-2 px-5 py-2 rounded-full text-xs font-semibold transition-all ${
-              inputMode === 'goal'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => setMode("goal")}
+            className={`relative flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all ${
+              mode === "goal" ? "text-white" : "text-gray-400 hover:text-gray-200"
             }`}
           >
-            <Zap className="w-4 h-4" />
-            <span>⚡ Direct Goal</span>
+            {mode === "goal" && (
+              <motion.div
+                layoutId="input-mode-pill"
+                className="absolute inset-0 bg-[#5EE0FF]/20 border border-[#5EE0FF]/40 rounded-lg shadow-[0_0_12px_rgba(94,224,255,0.3)]"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <Zap className="w-4 h-4 text-[#5EE0FF] relative z-10" />
+            <span className="relative z-10">⚡ Direct Goal</span>
           </button>
+
           <button
-            onClick={() => setInputMode('meeting')}
-            className={`flex items-center space-x-2 px-5 py-2 rounded-full text-xs font-semibold transition-all ${
-              inputMode === 'meeting'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => setMode("meeting")}
+            className={`relative flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all ${
+              mode === "meeting" ? "text-white" : "text-gray-400 hover:text-gray-200"
             }`}
           >
-            <Mic className="w-4 h-4" />
-            <span>🎙️ Ingest Meeting</span>
+            {mode === "meeting" && (
+              <motion.div
+                layoutId="input-mode-pill"
+                className="absolute inset-0 bg-[#5EE0FF]/20 border border-[#5EE0FF]/40 rounded-lg shadow-[0_0_12px_rgba(94,224,255,0.3)]"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <Mic className="w-4 h-4 text-[#5EE0FF] relative z-10" />
+            <span className="relative z-10">🎙️ Ingest Meeting</span>
           </button>
         </div>
       </div>
 
-      {/* Form Container */}
-      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-emerald-500/20 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-        <AnimatePresence mode="wait">
-          {inputMode === 'goal' ? (
-            <motion.form
-              key="goal-form"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              onSubmit={handleRunGoal}
-              className="space-y-4"
-            >
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  value={goalText}
-                  onChange={(e) => setGoalText(e.target.value)}
-                  placeholder="Specify your goal (e.g. Audit Q3 SaaS Expenses & Resolve Tokyo Logistics)..."
-                  className="w-full bg-black/60 border border-emerald-500/30 rounded-xl px-4 py-3.5 pr-32 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition"
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !goalText.trim()}
-                  className="absolute right-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-lg hover:brightness-110 disabled:opacity-50 transition flex items-center space-x-1.5 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Running...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Run Agent</span>
-                    </>
-                  )}
-                </button>
-              </div>
+      {/* Submitted Feedback Toast */}
+      <AnimatePresence>
+        {submittedMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-3 rounded-xl bg-[#3DDC84]/10 border border-[#3DDC84]/30 text-[#3DDC84] font-mono text-xs flex items-center space-x-2"
+          >
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{submittedMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              {/* Suggestion Chips */}
-              <div className="flex flex-wrap gap-2 text-[11px] text-slate-400 items-center pt-1">
-                <span className="font-mono text-emerald-400/80">Quick Prompts:</span>
-                {[
-                  'Audit Q3 SaaS Expenses',
-                  'Optimize Tokyo Air Freight',
-                  'Deploy Microservice Patch'
-                ].map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => setGoalText(chip)}
-                    className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 hover:border-emerald-500/40 hover:text-emerald-300 transition"
-                  >
-                    + {chip}
-                  </button>
-                ))}
-              </div>
-
-              {successMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>{successMessage}</span>
-                </motion.div>
-              )}
-            </motion.form>
-          ) : (
-            <motion.div
-              key="meeting-form"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-4"
-            >
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-                  isDragging
-                    ? 'border-emerald-400 bg-emerald-500/10'
-                    : 'border-white/15 bg-black/40 hover:border-emerald-500/40'
-                }`}
+      {/* Dynamic Content Forms */}
+      <AnimatePresence mode="wait">
+        {mode === "goal" ? (
+          /* Goal Agent Input Form */
+          <motion.form
+            key="goal-form"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            transition={{ duration: 0.2 }}
+            onSubmit={handleGoalSubmit}
+            className="space-y-4"
+          >
+            {/* Terminal Command Input Bar */}
+            <div className="relative flex items-center rounded-xl bg-black/60 border border-white/15 p-2 focus-within:border-[#5EE0FF] focus-within:ring-1 focus-within:ring-[#5EE0FF] transition-all">
+              <span className="pl-3 font-mono text-sm text-[#5EE0FF] font-bold">$</span>
+              <input
+                type="text"
+                value={goalPrompt}
+                onChange={(e) => setGoalPrompt(e.target.value)}
+                placeholder="High-level instruction (e.g. Deconstruct bottleneck and re-allocate compute budget)..."
+                className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 font-mono focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={!goalPrompt.trim()}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 disabled:opacity-40 disabled:hover:bg-[#5EE0FF] transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)]"
               >
+                <span>Dispatch</span>
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Additional Goal Parameters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                <DollarSign className="w-4 h-4 text-[#5EE0FF]" />
+                <span className="text-xs font-mono text-gray-400">Budget ($):</span>
                 <input
-                  type="file"
-                  id="meeting-file-person-a"
-                  accept=".mp3,.wav,.m4a,.txt,.json,.docx"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      processFile(e.target.files[0]);
-                    }
-                  }}
-                  className="hidden"
+                  type="number"
+                  value={goalBudget}
+                  onChange={(e) => setGoalBudget(e.target.value)}
+                  placeholder="15000"
+                  className="bg-transparent text-xs font-mono text-white focus:outline-none w-full"
                 />
-                <label htmlFor="meeting-file-person-a" className="cursor-pointer flex flex-col items-center space-y-2">
-                  <div className="p-3 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                    <Upload className="w-6 h-6 animate-bounce" />
-                  </div>
-                  <div className="text-xs text-slate-200 font-medium">
-                    Drag & drop meeting recording (<span className="text-emerald-400 font-mono">.mp3, .wav</span>) or transcript file
-                  </div>
-                  <p className="text-[11px] text-slate-500">
-                    Iteris OS auto-extracts action items, owners, deadlines & API calls
-                  </p>
-                </label>
               </div>
 
-              {uploadedFile && (
-                <div className="p-3 rounded-xl bg-white/5 border border-emerald-500/30 flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-3">
-                    <FileAudio className="w-5 h-5 text-emerald-400" />
-                    <div>
-                      <div className="font-semibold text-slate-200">{uploadedFile.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB • {uploadProgress === 100 ? 'Parsed successfully' : 'Processing audio streams...'}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    {uploadProgress === 100 ? (
-                      <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/40 flex items-center space-x-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <span>Action Plan Ready</span>
-                      </span>
-                    ) : (
-                      <div className="w-24 bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-emerald-400 h-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
+              <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                <MapPin className="w-4 h-4 text-[#5EE0FF]" />
+                <span className="text-xs font-mono text-gray-400">Target Node:</span>
+                <select
+                  value={goalCity}
+                  onChange={(e) => setGoalCity(e.target.value)}
+                  className="bg-[#0A0D14] text-xs font-mono text-white focus:outline-none w-full cursor-pointer border-none"
+                >
+                  <option value="New York">New York (US-East)</option>
+                  <option value="London">London (EU-West)</option>
+                  <option value="Tokyo">Tokyo (APAC)</option>
+                </select>
+              </div>
+            </div>
+          </motion.form>
+        ) : (
+          /* Meeting Agent Ingest Form */
+          <motion.form
+            key="meeting-form"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+            onSubmit={handleMeetingSubmit}
+            className="space-y-4"
+          >
+            {/* Drag & Drop File Zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragActive(true);
+              }}
+              onDragLeave={() => setDragActive(false)}
+              onDrop={handleFileDrop}
+              className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${
+                dragActive
+                  ? "border-[#5EE0FF] bg-[#5EE0FF]/10"
+                  : "border-white/15 bg-white/5 hover:border-white/30"
+              }`}
+            >
+              <div className="flex flex-col items-center justify-center space-y-2">
+                <Upload className="w-6 h-6 text-[#5EE0FF]" />
+                <div className="text-xs font-mono text-gray-300">
+                  <span className="font-semibold text-white">Drag & drop recording or transcript</span> (.mp3, .wav, .txt, .vtt)
                 </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <span className="text-[10px] text-gray-500 font-mono">
+                  {meetingFileName ? `Selected: ${meetingFileName}` : "or paste transcript excerpt below"}
+                </span>
+              </div>
+            </div>
+
+            {/* Source Type & Transcript Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-gray-400">
+                <span>Transcript Excerpt</span>
+                <div className="flex items-center space-x-2">
+                  <span>Source:</span>
+                  <select
+                    value={sourceType}
+                    onChange={(e) => setSourceType(e.target.value as IngestSourceType)}
+                    className="bg-[#0A0D14] text-[11px] text-[#5EE0FF] border border-white/10 rounded px-1.5 py-0.5 focus:outline-none"
+                  >
+                    <option value="transcript_text">Raw Text</option>
+                    <option value="vtt">WebVTT (.vtt)</option>
+                    <option value="audio">Audio (.mp3/.wav)</option>
+                    <option value="recording_url">Recording URL</option>
+                  </select>
+                </div>
+              </div>
+
+              <textarea
+                rows={2}
+                value={rawTranscript}
+                onChange={(e) => setRawTranscript(e.target.value)}
+                placeholder="Elena: We need the Tokyo node live by Friday. Marcus owns the GDPR compliance audit..."
+                className="w-full rounded-xl bg-black/60 border border-white/15 p-3 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-[#5EE0FF]"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-[#5EE0FF] text-black font-display font-semibold text-xs hover:bg-[#5EE0FF]/90 transition-all shadow-[0_0_15px_rgba(94,224,255,0.4)]"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Parse Transcript Matrix</span>
+              </button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
-
-export default DualInputSwitcher;
+}
