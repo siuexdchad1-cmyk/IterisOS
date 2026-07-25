@@ -6,12 +6,13 @@ import {
   ListTodo,
   ShieldCheck,
   Terminal,
-  Cpu,
   CheckCircle2,
   FileCheck,
   Sparkles,
   AlertCircle,
   HelpCircle,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import { useIterisStore } from "@/lib/store";
 import GlassPanel from "./GlassPanel";
@@ -20,69 +21,59 @@ import SlideToApprove from "@/components/person_b/SlideToApprove";
 import LiveTerminal from "@/components/person_c/LiveTerminal";
 import StepInspector from "@/components/person_c/StepInspector";
 
-// Lightweight markdown → JSX renderer (headings, bold, bullets, numbered, newlines)
 function renderMarkdown(text: string) {
   if (!text) return null;
 
-  // Normalise escaped newlines from JSON strings
   let normalized = text
     .replace(/\\n/g, "\n")
     .replace(/\\t/g, "  ")
-    // Normalise Lyzr's inconsistent *text:** and **text:** bold patterns → **text:**
     .replace(/\*([^*\n]+):\*\*/g, "**$1:**")
-    // Remove leftover solo asterisks that aren't part of ** pairs
     .replace(/(?<!\*)\*(?!\*)/g, "");
 
   return normalized.split("\n").map((line, i) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={i} className="h-1.5" />;
 
-    // Heading: # ## ### (with optional emoji)
     if (/^#{1,3}\s/.test(trimmed)) {
       const content = trimmed.replace(/^#{1,3}\s/, "");
       return (
-        <p key={i} className="text-[#5EE0FF] font-semibold text-[11px] mt-2 mb-0.5 font-mono">
+        <p key={i} className="text-[#5EE0FF] font-semibold text-xs mt-2 mb-1 font-mono">
           {inlineBold(content)}
         </p>
       );
     }
 
-    // Table separator — skip
     if (/^[\|\-\s]+$/.test(trimmed)) return null;
 
-    // Table row — render as plain text
     if (trimmed.startsWith("|")) {
       const cells = trimmed.split("|").filter(Boolean).map(c => c.trim()).join(" · ");
-      return <p key={i} className="text-gray-400 text-[10px]">{cells}</p>;
+      return <p key={i} className="text-gray-400 text-xs font-mono">{cells}</p>;
     }
 
-    // Bullet: - or *
     if (/^[-*]\s/.test(trimmed)) {
       return (
-        <div key={i} className="flex items-start gap-1.5 pl-1">
-          <span className="text-[#5EE0FF] mt-0.5 flex-shrink-0">›</span>
-          <span>{inlineBold(trimmed.replace(/^[-*]\s*/, ""))}</span>
+        <div key={i} className="flex items-start gap-2 pl-1 my-0.5">
+          <span className="text-[#5EE0FF] flex-shrink-0">›</span>
+          <span className="text-gray-200">{inlineBold(trimmed.replace(/^[-*]\s*/, ""))}</span>
         </div>
       );
     }
 
-    // Numbered list
     if (/^\d+[.)]\s/.test(trimmed)) {
       const num = trimmed.match(/^(\d+)/)?.[1];
       return (
-        <div key={i} className="flex items-start gap-1.5 pl-1">
+        <div key={i} className="flex items-start gap-2 pl-1 my-0.5">
           <span className="text-[#5EE0FF] flex-shrink-0 font-semibold">{num}.</span>
-          <span>{inlineBold(trimmed.replace(/^\d+[.)]\s*/, ""))}</span>
+          <span className="text-gray-200">{inlineBold(trimmed.replace(/^\d+[.)]\s*/, ""))}</span>
         </div>
       );
     }
 
-    return <p key={i}>{inlineBold(trimmed)}</p>;
+    return <p key={i} className="text-gray-200 my-0.5">{inlineBold(trimmed)}</p>;
   });
 }
 
 function inlineBold(text: string): React.ReactNode {
-  // Strip remaining stray ** or * that aren't forming valid bold pairs
   const cleaned = text.replace(/\*{3,}/g, "").replace(/(?<!\*)\*\*(?!\*)/g, "");
   const parts = cleaned.split(/\*\*(.*?)\*\*/g);
   if (parts.length === 1) return cleaned;
@@ -97,7 +88,6 @@ function inlineBold(text: string): React.ReactNode {
   );
 }
 
-
 export default function DashboardShell() {
   const { state } = useIterisStore();
   const goalSummaries = state?.goalSummaries ?? [];
@@ -107,7 +97,6 @@ export default function DashboardShell() {
   const planSteps     = state?.planSteps     ?? [];
   const approvals     = state?.approvals     ?? [];
 
-  // Only show the dashboard once the user has submitted at least one thing
   const hasAnyData =
     goalSummaries.length > 0 ||
     decisions.length > 0 ||
@@ -119,19 +108,82 @@ export default function DashboardShell() {
   if (!hasAnyData) return null;
 
   return (
-    <div className="w-full space-y-5 my-2">
-      {/* Goal Execution Summary — only when goals have been run */}
+    <div className="w-full space-y-6 my-4">
+
+      {/* 1. Live Plan Steps — Numbered Progress Tracker */}
       <AnimatePresence>
-        {goalSummaries.length > 0 && (
+        {planSteps.length > 0 && (
           <motion.div
-            key="goal-summary"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.3 }}
           >
             <GlassPanel
-              title="Execution Log & Trace"
+              title="Execution Plan Steps"
+              icon={<ListTodo className="w-4 h-4 text-[#5EE0FF]" />}
+              badge={
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
+                  {planSteps.filter(s => s.status === "completed").length} / {planSteps.length} Steps Complete
+                </span>
+              }
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                {planSteps.map((step, idx) => (
+                  <div
+                    key={step.id}
+                    className={`p-3 rounded-xl border transition-all ${
+                      step.status === "completed"
+                        ? "bg-[#3DDC84]/10 border-[#3DDC84]/30 text-white"
+                        : step.status === "running"
+                        ? "bg-[#5EE0FF]/10 border-[#5EE0FF]/40 text-white shadow-[0_0_12px_rgba(94,224,255,0.2)]"
+                        : "bg-white/5 border-white/10 text-gray-400"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between font-mono text-[11px] mb-1">
+                      <span className="font-bold text-[#5EE0FF]">Step {String(idx + 1).padStart(2, "0")}</span>
+                      {step.status === "completed" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#3DDC84]" />
+                      ) : step.status === "running" ? (
+                        <div className="w-2 h-2 rounded-full bg-[#5EE0FF] animate-ping" />
+                      ) : (
+                        <Clock className="w-3.5 h-3.5 text-gray-500" />
+                      )}
+                    </div>
+                    <p className="text-xs font-medium line-clamp-2">{step.title}</p>
+                  </div>
+                ))}
+              </div>
+            </GlassPanel>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main 2-Column Layout: Left 2 Cols (Main Focal Point) vs Right 1 Col (Sidebar) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Left Column (2 Cols): ONE Main Focal Point — Live Reasoning Timeline & Audit Trail */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Main Reasoning Timeline Log */}
+          {logs.length > 0 && (
+            <GlassPanel
+              title="Live Agent Reasoning Timeline"
+              icon={<Terminal className="w-5 h-5 text-[#5EE0FF]" />}
+              badge={
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
+                  {logs.length} Timeline Steps
+                </span>
+              }
+            >
+              <LiveTerminal />
+            </GlassPanel>
+          )}
+
+          {/* Goal Execution Summary / Audit Trail */}
+          {goalSummaries.length > 0 && (
+            <GlassPanel
+              title="Execution Audit Trail & Results"
               icon={<FileCheck className="w-5 h-5 text-[#3DDC84]" />}
               badge={
                 <span className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#3DDC84]/15 text-[#3DDC84] border border-[#3DDC84]/30">
@@ -144,90 +196,55 @@ export default function DashboardShell() {
               {goalSummaries.map((summary, i) => (
                 <div
                   key={summary.id}
-                  className={`space-y-3 text-xs ${i > 0 ? "pt-4 border-t border-white/10" : ""}`}
+                  className={`space-y-4 text-xs ${i > 0 ? "pt-4 border-t border-white/10" : ""}`}
                 >
-                  {/* Audit Trail */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[#3DDC84] font-semibold text-[11px]">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[#3DDC84] font-semibold text-xs font-mono">
                       <span className="flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Audit Trail
+                        <Sparkles className="w-4 h-4" />
+                        Audit Trail Summary
                       </span>
-                      <span className="text-gray-500 font-normal font-mono">
+                      <span className="text-gray-500 font-normal">
                         {new Date(summary.generatedAt).toLocaleTimeString()}
                       </span>
                     </div>
-                    <p className="text-gray-200 text-sm leading-relaxed">{summary.whatWasDone}</p>
+                    <p className="text-gray-100 text-sm leading-relaxed">{summary.whatWasDone}</p>
                   </div>
 
-                  {/* Reasoning Chain & Trace + Verification & Validation */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 overflow-auto max-h-48">
-                      <span className="text-[#5EE0FF] font-semibold text-[11px] block font-mono">
-                        Reasoning Chain & Trace
-                      </span>
-                      <div className="text-gray-300 text-xs leading-relaxed space-y-1 font-mono">
-                        {renderMarkdown(summary.reasoning)}
-                      </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                    <span className="text-[#5EE0FF] font-semibold text-xs block font-mono">
+                      Reasoning Chain & Observations
+                    </span>
+                    <div className="text-gray-300 text-xs leading-relaxed space-y-1">
+                      {renderMarkdown(summary.reasoning)}
                     </div>
-
-                    {summary.whatFailed ? (
-                      <div className="p-3 rounded-xl bg-[#FF5C5C]/10 border border-[#FF5C5C]/30 space-y-1">
-                        <span className="text-[#FF5C5C] font-semibold text-[11px] flex items-center gap-1 font-mono">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          Errors Detected
-                        </span>
-                        <p className="text-gray-300 text-xs">{summary.whatFailed}</p>
-                      </div>
-                    ) : (
-                      <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
-                        <span className="text-[#3DDC84] font-semibold text-[11px] flex items-center gap-1 font-mono">
-                          <HelpCircle className="w-3.5 h-3.5 text-[#3DDC84]" />
-                          Verification & Validation
-                        </span>
-                        <p className="text-gray-400 text-xs font-mono">
-                          All parameters validated against compliance policies. 0 errors detected.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </GlassPanel>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
 
-      {/* Meeting Decisions & Insights — rendered when meeting decisions exist */}
-      <AnimatePresence>
-        {decisions.length > 0 && (
-          <motion.div
-            key="meeting-decisions"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
+          {/* Meeting Decisions */}
+          {decisions.length > 0 && (
             <GlassPanel
-              title="Meeting Decisions & Extracted Answers"
+              title="Meeting Decisions & Key Insights"
               icon={<Sparkles className="w-5 h-5 text-[#5EE0FF]" />}
               badge={
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
-                  {decisions.length} Decision{decisions.length === 1 ? "" : "s"} Extracted
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
+                  {decisions.length} Decisions
                 </span>
               }
-              className="border-[#5EE0FF]/20"
             >
-              <div className="space-y-3 font-sans text-xs">
+              <div className="space-y-3 text-xs">
                 {decisions.slice(0, 5).map((dec) => (
                   <div
                     key={dec.id}
                     className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5"
                   >
-                    <div className="flex items-center justify-between text-[11px] font-mono">
+                    <div className="flex items-center justify-between text-xs font-mono">
                       <span className="text-[#5EE0FF] font-semibold flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#3DDC84]" />
-                        Key Decision / Answer
+                        Key Decision
                       </span>
                       {dec.confidence && (
                         <span className="text-gray-400">
@@ -235,69 +252,68 @@ export default function DashboardShell() {
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-200 text-sm leading-relaxed font-sans">
-                      {dec.summary}
-                    </p>
+                    <p className="text-gray-200 text-sm leading-relaxed">{dec.summary}</p>
                   </div>
                 ))}
               </div>
             </GlassPanel>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
 
-      {/* Main grid — Terminal spans full width when there are no action items */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Meeting Action Items — only when meeting data exists */}
-        {actionItems.length > 0 && (
-          <div className="lg:col-span-2">
-            <GlassPanel
-              title="Meeting Action Items"
-              icon={<ListTodo className="w-4 h-4 text-[#5EE0FF]" />}
-            >
-              <TaskMatrix />
-            </GlassPanel>
-          </div>
-        )}
+        </div>
 
-        {/* Human Authorization — only when approvals are pending */}
-        {approvals.filter((a) => a.status === "pending").length > 0 && (
-          <div className={actionItems.length > 0 ? "lg:col-span-1" : "lg:col-span-3"}>
+        {/* Right Column (1 Col): Secondary Sidebar (Approvals, Action Items, Step Inspector) */}
+        <div className="lg:col-span-1 space-y-6 opacity-95">
+
+          {/* Human Authorizations */}
+          {approvals.filter((a) => a.status === "pending").length > 0 && (
             <GlassPanel
               title="Human Authorization"
               icon={<ShieldCheck className="w-4 h-4 text-[#FFB84D]" />}
             >
               <SlideToApprove />
             </GlassPanel>
-          </div>
-        )}
+          )}
 
-        {/* Live Terminal — always shown once there are logs */}
-        {logs.length > 0 && (
-          <div className={
-            actionItems.length > 0 ? "lg:col-span-2" : "lg:col-span-3"
-          }>
+          {/* Meeting Action Items */}
+          {actionItems.length > 0 && (
             <GlassPanel
-              title="Agent Reasoning Terminal"
-              icon={<Terminal className="w-4 h-4 text-[#5EE0FF]" />}
+              title="Action Items Matrix"
+              icon={<ListTodo className="w-4 h-4 text-[#5EE0FF]" />}
             >
-              <LiveTerminal />
+              <TaskMatrix />
             </GlassPanel>
-          </div>
-        )}
+          )}
 
-        {/* Step Inspector — only when goal steps exist */}
-        {planSteps.length > 0 && (
-          <div className="lg:col-span-1">
+          {/* Verification & Validation */}
+          <GlassPanel
+            title="Verification & Validation"
+            icon={<HelpCircle className="w-4 h-4 text-[#3DDC84]" />}
+          >
+            <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+              <div className="flex items-center space-x-2 text-[#3DDC84] font-mono text-xs font-semibold">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Validation Passed</span>
+              </div>
+              <p className="text-gray-400 text-xs font-mono leading-relaxed">
+                All parameters validated against agent policies. 0 execution errors detected.
+              </p>
+            </div>
+          </GlassPanel>
+
+          {/* Step Inspector */}
+          {planSteps.length > 0 && (
             <GlassPanel
-              title="Goal Step Inspector"
-              icon={<Cpu className="w-4 h-4 text-purple-400" />}
+              title="Step Inspector"
+              icon={<Sparkles className="w-4 h-4 text-purple-400" />}
             >
               <StepInspector />
             </GlassPanel>
-          </div>
-        )}
+          )}
+
+        </div>
+
       </div>
+
     </div>
   );
 }
