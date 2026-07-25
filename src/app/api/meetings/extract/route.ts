@@ -46,12 +46,15 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error(`Lyzr API error (${response.status}):`, errText);
+      console.error(`[meetings/extract] Lyzr API HTTP ${response.status}:`, errText.slice(0, 400));
       return NextResponse.json(generateFallbackExtraction(meetingId, transcript, `Lyzr HTTP ${response.status}`));
     }
 
     const responseText = await response.text();
+    console.log(`[meetings/extract] Raw Lyzr response (first 600 chars):`, responseText.slice(0, 600));
+
     const parsedData = parseLyzrExtractionOutput(responseText, meetingId, transcript);
+    console.log(`[meetings/extract] Parsed decisions:`, parsedData.decisions.length, "| actionItems:", parsedData.actionItems.length);
 
     return NextResponse.json(parsedData);
   } catch (error: unknown) {
@@ -71,23 +74,30 @@ function parseLyzrExtractionOutput(
   transcript: string
 ): { decisions: MeetingDecision[]; actionItems: MeetingActionItem[] } {
   try {
-    // Attempt 1: Check if output is SSE stream chunks or JSON string
+    console.log(`[parseLyzrExtractionOutput] Raw Output:`, rawOutput.slice(0, 1000));
     let cleanedText = rawOutput;
-    
+
     // Handle SSE "data: {...}" chunks if streamed
     if (rawOutput.includes("data:")) {
       const lines = rawOutput.split("\n");
       const extractedChunks: string[] = [];
       for (const line of lines) {
         if (line.startsWith("data:")) {
-          const chunkStr = line.replace("data:", "").trim();
+          const chunkStr = line.replace(/^data:\s*/, "").trim();
+          if (!chunkStr || chunkStr === "[DONE]") continue;
           try {
             const parsedChunk = JSON.parse(chunkStr);
-            if (parsedChunk.response || parsedChunk.message || parsedChunk.text) {
-              extractedChunks.push(parsedChunk.response || parsedChunk.message || parsedChunk.text);
-            }
+            const text =
+              parsedChunk.response ??
+              parsedChunk.message ??
+              parsedChunk.text ??
+              parsedChunk.chunk ??
+              parsedChunk.delta ??
+              parsedChunk.content ??
+              (typeof parsedChunk === "string" ? parsedChunk : null);
+            if (text) extractedChunks.push(text);
           } catch {
-            extractedChunks.push(chunkStr);
+            if (chunkStr.length > 1) extractedChunks.push(chunkStr);
           }
         }
       }

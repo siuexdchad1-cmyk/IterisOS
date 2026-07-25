@@ -55,7 +55,7 @@ export default function Home() {
           </p>
         </motion.div>
 
-        {/* 3D Wireframe Earth Canvas & Hotspots (HeroGlobe) */}
+        {/* System Status Banner — live agent metrics */}
         <motion.div variants={itemVariants}>
           <HeroGlobe />
         </motion.div>

@@ -46,12 +46,15 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error(`Lyzr API error (${response.status}):`, errText);
+      console.error(`[goals/run] Lyzr API HTTP ${response.status}:`, errText.slice(0, 400));
       return NextResponse.json(generateFallbackGoalResponse(goalId, prompt, `Lyzr HTTP ${response.status}`));
     }
 
     const responseText = await response.text();
+    console.log(`[goals/run] Raw Lyzr response (first 600 chars):`, responseText.slice(0, 600));
+
     const parsedData = parseLyzrGoalOutput(responseText, goalId, prompt);
+    console.log(`[goals/run] Parsed steps:`, parsedData.steps.length, "| Summary:", parsedData.summary.whatWasDone?.slice(0, 80));
 
     return NextResponse.json(parsedData);
   } catch (error: unknown) {
@@ -71,6 +74,7 @@ function parseLyzrGoalOutput(
   prompt: string
 ): { summary: GoalSummary; steps: GoalPlanStep[]; rawResponse: string } {
   let cleanedText = rawOutput;
+  console.log(`[parseLyzrGoalOutput] Raw Output:`, rawOutput.slice(0, 1000));
 
   // Extract text from SSE data stream if streamed
   if (rawOutput.includes("data:")) {
@@ -78,14 +82,21 @@ function parseLyzrGoalOutput(
     const chunks: string[] = [];
     for (const line of lines) {
       if (line.startsWith("data:")) {
-        const chunkStr = line.replace("data:", "").trim();
+        const chunkStr = line.replace(/^data:\s*/, "").trim();
+        if (!chunkStr || chunkStr === "[DONE]") continue;
         try {
           const parsed = JSON.parse(chunkStr);
-          if (parsed.response || parsed.message || parsed.text) {
-            chunks.push(parsed.response || parsed.message || parsed.text);
-          }
+          const text =
+            parsed.response ??
+            parsed.message ??
+            parsed.text ??
+            parsed.chunk ??
+            parsed.delta ??
+            parsed.content ??
+            (typeof parsed === "string" ? parsed : null);
+          if (text) chunks.push(text);
         } catch {
-          chunks.push(chunkStr);
+          if (chunkStr.length > 1) chunks.push(chunkStr);
         }
       }
     }

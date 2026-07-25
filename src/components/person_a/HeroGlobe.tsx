@@ -1,164 +1,172 @@
 "use client";
 
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
-import { Globe, MapPin, CheckCircle2, AlertCircle, Clock, X, Zap } from "lucide-react";
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  Activity,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Zap,
+  Layers,
+  BrainCircuit,
+} from "lucide-react";
 import { useIterisStore } from "@/lib/store";
-import { HotspotTask } from "@/types";
 
-// Dynamic import for R3F Canvas to prevent SSR hydration errors
-const GlobeCanvas = dynamic(() => import("./GlobeCanvas"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center space-y-3">
-        <div className="w-12 h-12 rounded-full border-2 border-[#5EE0FF]/30 border-t-[#5EE0FF] animate-spin" />
-        <span className="font-mono text-xs text-gray-400">Initializing 3D Telemetry Canvas...</span>
-      </div>
-    </div>
-  ),
-});
-
-export default function HeroGlobe() {
-  const { state } = useIterisStore();
-  const hotspots = state?.hotspots || [];
-
-  const [selectedHotspot, setSelectedHotspot] = useState<HotspotTask | null>(
-    hotspots[0] || null
+// Animated pulse dot
+function PulseDot({ color }: { color: string }) {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span
+        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+        style={{ backgroundColor: color }}
+      />
+      <span
+        className="relative inline-flex rounded-full h-2 w-2"
+        style={{ backgroundColor: color }}
+      />
+    </span>
   );
+}
 
-  const getStatusBadge = (status: HotspotTask["status"]) => {
-    switch (status) {
-      case "completed":
-        return (
-          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#3DDC84]/15 text-[#3DDC84] border border-[#3DDC84]/30">
-            <CheckCircle2 className="w-3 h-3" />
-            <span>Completed</span>
-          </span>
-        );
-      case "awaiting_approval":
-        return (
-          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#FFB84D]/15 text-[#FFB84D] border border-[#FFB84D]/30">
-            <AlertCircle className="w-3 h-3" />
-            <span>Awaiting Approval</span>
-          </span>
-        );
-      default:
-        return (
-          <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30">
-            <Clock className="w-3 h-3 animate-spin" />
-            <span>In Execution</span>
-          </span>
-        );
-    }
-  };
+// One metric tile
+function StatTile({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  icon: React.ElementType;
+  accent: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors min-w-0">
+      <div className="flex items-center gap-1.5">
+        <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: accent }} />
+        <span className="text-[11px] font-mono text-gray-400 truncate">{label}</span>
+      </div>
+      <span className="font-display font-bold text-xl text-white leading-none">{value}</span>
+      {sub && <span className="text-[10px] font-mono text-gray-500 truncate">{sub}</span>}
+    </div>
+  );
+}
+
+export default function SystemStatusBanner() {
+  const { state } = useIterisStore();
+
+  // Derive counts from store
+  const goals = state?.goals ?? [];
+  const meetingActions = state?.actionItems ?? [];
+  const logs = state?.logs ?? [];
+
+  const completedGoals = goals.filter((g) => g.status === "completed").length;
+  const pendingActions = meetingActions.filter((a) => a.status === "pending").length;
+  const completedActions = meetingActions.filter((a) => a.status === "completed").length;
+  const errorCount = logs.filter((l) => l.level === "error").length;
+
+  const agentStatus = state?.agentStatus ?? "idle";
+  const statusColor =
+    agentStatus === "executing"
+      ? "#5EE0FF"
+      : agentStatus === "thinking"
+      ? "#FFB84D"
+      : agentStatus === "error"
+      ? "#FF5C5C"
+      : "#3DDC84";
+
+  const statusLabel =
+    agentStatus === "executing"
+      ? "Executing"
+      : agentStatus === "thinking"
+      ? "Processing"
+      : agentStatus === "error"
+      ? "Error — Fallback Applied"
+      : "Ready";
 
   return (
-    <div className="relative w-full rounded-2xl glass-panel p-4 md:p-6 overflow-hidden border border-white/10 my-4">
-      {/* Background ambient lighting */}
-      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[#5EE0FF]/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-[#3DDC84]/5 blur-3xl pointer-events-none" />
+    <div className="relative w-full rounded-2xl glass-panel p-4 md:px-6 md:py-4 overflow-hidden border border-white/10 my-4">
+      {/* Ambient glow */}
+      <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-[#5EE0FF]/8 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-[#3DDC84]/6 blur-3xl pointer-events-none" />
 
-      {/* Header Info Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4 mb-2">
-        <div className="flex items-center space-x-3">
+      {/* Header row */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#5EE0FF]">
-            <Globe className="w-5 h-5" />
+            <Activity className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-display font-semibold text-lg text-white tracking-tight flex items-center space-x-2">
-              <span>Global Agentic Mesh</span>
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5EE0FF] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5EE0FF]" />
-              </span>
+            <h2 className="font-display font-semibold text-base text-white tracking-tight">
+              System Status
             </h2>
             <p className="text-xs text-gray-400 font-mono">
-              Live Edge Execution Hotspots & Regional Task Routing
+              Live metrics — Lyzr Agent Pipeline
             </p>
           </div>
         </div>
 
-        {/* Hotspot Quick Filters */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0">
-          {hotspots.map((hs) => {
-            const isSelected = selectedHotspot?.taskId === hs.taskId;
-            return (
-              <button
-                key={hs.taskId}
-                onClick={() => setSelectedHotspot(hs)}
-                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all flex items-center space-x-1.5 whitespace-nowrap ${
-                  isSelected
-                    ? "bg-[#5EE0FF]/20 text-[#5EE0FF] border border-[#5EE0FF]/40 shadow-[0_0_10px_rgba(94,224,255,0.2)]"
-                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <MapPin className="w-3 h-3" />
-                <span>{hs.city}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Agent status pill */}
+        <motion.div
+          key={agentStatus}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono border"
+          style={{
+            color: statusColor,
+            borderColor: `${statusColor}40`,
+            backgroundColor: `${statusColor}10`,
+          }}
+        >
+          <PulseDot color={statusColor} />
+          <span>Agent: {statusLabel}</span>
+        </motion.div>
       </div>
 
-      {/* Globe & Interactive Popup Container */}
-      <div className="relative h-[320px] md:h-[380px] w-full flex items-center justify-center">
-        {/* 3D R3F Canvas */}
-        <GlobeCanvas
-          hotspots={hotspots}
-          activeHotspot={selectedHotspot}
-          onSelectHotspot={(hs) => setSelectedHotspot(hs)}
+      {/* Metrics grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatTile
+          label="Goals Processed"
+          value={goals.length}
+          sub={`${completedGoals} completed`}
+          icon={BrainCircuit}
+          accent="#5EE0FF"
         />
-
-        {/* Overlay Popup Card (Framer Motion AnimatePresence) */}
-        <AnimatePresence>
-          {selectedHotspot && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 glass-panel p-4 rounded-xl border border-white/20 shadow-2xl backdrop-blur-2xl z-20"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="p-1.5 rounded-lg bg-[#5EE0FF]/15 text-[#5EE0FF]">
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-semibold text-sm text-white">
-                      {selectedHotspot.city} Node
-                    </h4>
-                    <span className="font-mono text-[10px] text-gray-400">
-                      Task ID: {selectedHotspot.taskId}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedHotspot(null)}
-                  className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-white/10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
-                <p className="text-xs text-gray-200 font-medium leading-snug">
-                  {selectedHotspot.label}
-                </p>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] font-mono text-gray-400">
-                    Execution State:
-                  </span>
-                  {getStatusBadge(selectedHotspot.status)}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <StatTile
+          label="Pending Actions"
+          value={pendingActions}
+          sub="from meeting agent"
+          icon={Clock}
+          accent="#FFB84D"
+        />
+        <StatTile
+          label="Actions Done"
+          value={completedActions}
+          sub={`${meetingActions.length} total extracted`}
+          icon={CheckCircle2}
+          accent="#3DDC84"
+        />
+        <StatTile
+          label="Agent Events"
+          value={logs.length}
+          sub={errorCount > 0 ? `${errorCount} error(s) logged` : "No errors"}
+          icon={errorCount > 0 ? AlertCircle : Zap}
+          accent={errorCount > 0 ? "#FF5C5C" : "#5EE0FF"}
+        />
       </div>
+
+      {/* Last log line */}
+      {logs.length > 0 && (
+        <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-black/30 border border-white/8">
+          <Layers className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+          <span className="font-mono text-[11px] text-gray-400 truncate">
+            {logs[logs.length - 1].message}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
