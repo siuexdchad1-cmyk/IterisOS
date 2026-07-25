@@ -11,15 +11,15 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-[#0A0D10] text-[#E7ECEF] selection:bg-[#FFB454]/30 selection:text-[#FFB454] relative">
+    <main className="min-h-screen bg-[#0A0D10] text-[#E7ECEF] selection:bg-[#5EE0FF]/30 selection:text-[#5EE0FF] relative">
       {/* 3D Motion Canvas */}
       <Background3DMotionCanvas />
 
-      {/* Top Header Navbar per home.html */}
+      {/* Top Header Navbar */}
       <nav className="flex items-center justify-between max-w-[1120px] mx-auto px-6 py-7 relative z-20">
         <Link href="/" className="flex items-center gap-2.5 font-display font-semibold text-lg tracking-wide text-white">
           <div className="w-5 h-5 border-[1.5px] border-[#E7ECEF] rounded relative flex items-center justify-center">
-            <span className="absolute inset-[3px] bg-[#FFB454] rounded-[1px]" />
+            <span className="absolute inset-[3px] bg-[#5EE0FF] rounded-[1px]" />
           </div>
           <span>IterisOS</span>
         </Link>
@@ -29,17 +29,17 @@ export default function Home() {
           <a href="#pipeline" className="hover:text-white transition-colors">Pipeline</a>
           <Link
             href="/dashboard"
-            className="text-[#0A0D10] bg-[#E7ECEF] px-4 py-2 rounded-md font-medium hover:bg-white transition-all shadow-sm"
+            className="text-[#0A0D10] bg-[#5EE0FF] px-4 py-2 rounded-md font-medium hover:bg-[#5EE0FF]/90 transition-all shadow-sm font-semibold"
           >
             Open Dashboard →
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section per home.html */}
+      {/* Hero Section */}
       <section className="max-w-[1120px] mx-auto px-6 pt-12 pb-14 relative z-10">
         <div className="font-mono text-xs tracking-widest text-[#4E5661] uppercase mb-5 flex items-center gap-2.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FFB454]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#5EE0FF]" />
           <span>InnovaHack Chapter-1 · Domain 4</span>
         </div>
 
@@ -55,7 +55,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-3.5 mb-14">
           <button
             onClick={() => router.push("/dashboard")}
-            className="bg-[#FFB454] text-[#1A1200] px-5 py-3 rounded-md font-semibold text-sm hover:bg-[#FFB454]/90 transition-all shadow-md cursor-pointer font-sans"
+            className="bg-[#5EE0FF] text-[#0A0D10] px-5 py-3 rounded-md font-semibold text-sm hover:bg-[#5EE0FF]/90 transition-all shadow-md cursor-pointer font-sans"
           >
             Open Dashboard
           </button>
@@ -63,13 +63,13 @@ export default function Home() {
             onClick={() => {
               document.getElementById("agents")?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="bg-transparent text-[#E7ECEF] border border-[#262D35] px-5 py-3 rounded-md font-medium text-sm hover:border-[#8791A0] transition-all cursor-pointer font-sans"
+            className="bg-transparent text-[#E7ECEF] border border-[#262D35] px-5 py-3 rounded-md font-medium text-sm hover:border-[#5EE0FF] transition-all cursor-pointer font-sans"
           >
             See how it works
           </button>
         </div>
 
-        {/* Two-Agent Split — Signature Element per home.html */}
+        {/* Two-Agent Split */}
         <div className="agent-split" id="agents">
           {/* Goal Agent Card */}
           <div className="agent-card goal">
@@ -105,11 +105,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4-Step Trace Section per home.html */}
+      {/* 4-Step Trace Section */}
       <section className="trace-section" id="pipeline">
         <div className="trace-header">
           <div className="font-mono text-xs tracking-widest text-[#4E5661] uppercase mb-3 flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FFB454]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5EE0FF]" />
             <span>How the goal agent runs</span>
           </div>
           <h2>Every run is one visible trace.</h2>
@@ -144,7 +144,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer per home.html */}
+      {/* Footer */}
       <footer className="max-w-[1120px] mx-auto px-6 py-8 border-t border-[#262D35] flex flex-col sm:flex-row items-center justify-between text-xs text-[#4E5661] font-mono gap-2">
         <span>IterisOS — Unified Agentic Shell</span>
         <span>Domain 4 · Team ITERISOS</span>

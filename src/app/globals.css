@@ -9,14 +9,18 @@
   --fg: #E7ECEF;
   --fg-muted: #8791A0;
   --fg-faint: #4E5661;
-  --goal: #FFB454;
-  --goal-dim: #4A3A24;
-  --meeting: #5ED3C8;
-  --meeting-dim: #22403C;
+  
+  /* Unified Single Accent Color Theme: Cyan (#5EE0FF) */
+  --accent: #5EE0FF;
+  --accent-dim: rgba(94, 224, 255, 0.12);
+  --goal: #5EE0FF;
+  --goal-dim: rgba(94, 224, 255, 0.12);
+  --meeting: #5EE0FF;
+  --meeting-dim: rgba(94, 224, 255, 0.12);
 
-  --accent-cyan: #5ED3C8;
+  --accent-cyan: #5EE0FF;
   --status-success: #3DDC84;
-  --status-warning: #FFB454;
+  --status-warning: #5EE0FF;
   --status-danger: #FF5C5C;
 
   --font-display: 'Space Grotesk', -apple-system, sans-serif;
@@ -42,7 +46,7 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Minimalist Clean Two-Agent Split */
+/* Single Theme Accent Two-Agent Split */
 .agent-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -61,12 +65,8 @@ body {
   transition: background-color 0.2s ease;
 }
 
-.agent-card.goal {
-  border-top: 2px solid var(--goal);
-}
-
-.agent-card.meeting {
-  border-top: 2px solid var(--meeting);
+.agent-card.goal, .agent-card.meeting {
+  border-top: 2px solid var(--accent);
 }
 
 .agent-tag {
@@ -79,16 +79,9 @@ body {
   display: inline-block;
   margin-bottom: 18px;
   font-weight: 600;
-}
-
-.goal .agent-tag {
-  color: var(--goal);
-  background: var(--goal-dim);
-}
-
-.meeting .agent-tag {
-  color: var(--meeting);
-  background: var(--meeting-dim);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(94, 224, 255, 0.2);
 }
 
 .agent-card h3 {
@@ -114,7 +107,7 @@ body {
   line-height: 1.6;
 }
 
-/* Minimalist Trace Sequence */
+/* Unified Single Theme Trace Sequence */
 .trace-section {
   max-width: 1120px;
   margin: 0 auto;
@@ -149,7 +142,7 @@ body {
   left: 6%;
   right: 6%;
   height: 1px;
-  background: linear-gradient(90deg, var(--goal), var(--line) 40%, var(--line) 60%, var(--meeting));
+  background: rgba(94, 224, 255, 0.3);
 }
 
 .trace-step {
@@ -162,13 +155,13 @@ body {
   height: 38px;
   border-radius: 50%;
   background: var(--ink-900);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(94, 224, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: var(--fg-muted);
+  color: var(--accent);
   margin-bottom: 20px;
   position: relative;
   z-index: 1;
@@ -198,7 +191,7 @@ body {
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(94, 224, 255, 0.3);
 }
 
 /* Responsive breakpoint */

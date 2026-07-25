@@ -91,12 +91,12 @@ export default function DashboardPage() {
               onClick={() => setAgentMode("goal")}
               className={`relative flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                 agentMode === "goal"
-                  ? "text-[#FFB84D] bg-[#FFB84D]/15 border border-[#FFB84D]/40 shadow-[0_0_12px_rgba(255,184,77,0.25)]"
+                  ? "text-[#5EE0FF] bg-[#5EE0FF]/15 border border-[#5EE0FF]/40 shadow-[0_0_12px_rgba(94,224,255,0.25)]"
                   : "text-gray-400 hover:text-gray-200"
               }`}
             >
-              <Zap className="w-4 h-4 text-[#FFB84D]" />
-              <span>⚡ Goal Agent (Amber)</span>
+              <Zap className="w-4 h-4 text-[#5EE0FF]" />
+              <span>⚡ Goal Agent</span>
             </button>
 
             <button
@@ -108,7 +108,7 @@ export default function DashboardPage() {
               }`}
             >
               <Mic className="w-4 h-4 text-[#5EE0FF]" />
-              <span>🎙️ Meeting Agent (Teal)</span>
+              <span>🎙️ Meeting Agent</span>
             </button>
           </div>
         </div>
@@ -254,10 +254,10 @@ export default function DashboardPage() {
             <div className="p-4 rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl space-y-3">
               <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                 <span className="font-display font-semibold text-sm text-white flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#FFB84D]" />
+                  <ShieldCheck className="w-4 h-4 text-[#5EE0FF]" />
                   Pending Approvals
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FFB84D]/15 text-[#FFB84D] border border-[#FFB84D]/30 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#5EE0FF]/15 text-[#5EE0FF] border border-[#5EE0FF]/30 font-bold">
                   {currentApprovals.length} Required
                 </span>
               </div>
@@ -265,16 +265,16 @@ export default function DashboardPage() {
               {currentApprovals.map((app) => (
                 <div
                   key={app.id}
-                  className="p-3 rounded-2xl bg-white/5 border border-[#FFB84D]/30 space-y-2 text-xs"
+                  className="p-3 rounded-2xl bg-white/5 border border-[#5EE0FF]/30 space-y-2 text-xs"
                 >
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#FFB84D]">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#5EE0FF]">
                     <span>AUTHORIZATION NEEDED</span>
                     <span>{app.requestedAt}</span>
                   </div>
                   <p className="text-gray-200 font-sans leading-relaxed">{app.reason}</p>
                   <button
                     onClick={() => alert(`Authorized request ${app.id}`)}
-                    className="w-full py-1.5 rounded-xl bg-[#FFB84D] text-black font-display font-bold text-xs hover:bg-[#FFB84D]/90 transition-all cursor-pointer"
+                    className="w-full py-1.5 rounded-xl bg-[#5EE0FF] text-black font-display font-bold text-xs hover:bg-[#5EE0FF]/90 transition-all cursor-pointer"
                   >
                     Authorize Action
                   </button>
