@@ -8,7 +8,6 @@ import {
   Upload,
   FileText,
   Send,
-  Sparkles,
   CheckCircle,
   Loader2,
   AlertTriangle,
@@ -181,18 +180,10 @@ export default function DualInputSwitcher() {
   };
 
   return (
-    <div className="w-full glass-panel p-5 md:p-6 rounded-2xl border border-white/10 my-4 relative overflow-hidden">
-      {/* Header + mode toggle */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
-        <div>
-          <h3 className="font-display font-semibold text-white text-base flex items-center space-x-2">
-            <span>Agent Orchestration</span>
-            <Sparkles className="w-4 h-4 text-[#5EE0FF]" />
-          </h3>
-          <p className="text-xs text-gray-400 font-mono">
-            Connected to deployed Lyzr Studio Agents
-          </p>
-        </div>
+    <div className="w-full glass-panel p-4 md:p-5 rounded-2xl border border-white/10 relative">
+      {/* Mode toggle */}
+      <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
+        <span className="text-xs font-mono text-gray-400">Select mode:</span>
 
         <div className="relative flex p-1 rounded-xl bg-black/40 border border-white/10 w-full sm:w-auto">
           <button

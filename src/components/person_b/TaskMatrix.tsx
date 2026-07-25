@@ -84,9 +84,6 @@ export default function TaskMatrix() {
           </button>
         </div>
 
-        <span className="text-[11px] font-mono text-gray-500 hidden sm:block">
-          Person B Stub
-        </span>
       </div>
 
       {/* Action Items List */}
